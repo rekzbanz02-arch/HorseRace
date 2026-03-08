@@ -624,26 +624,42 @@ function enterApp(){
     document.getElementById('host-panel').style.display='block';
     document.getElementById('host-m').style.display='block';
   }
-  setupCanvas(); startPolling(); renderAll();
+  setupCanvas(); startPolling(); renderAll(); pollOnce();
 }
 
 // ═══════════════════════════════════════════════════════
 // POLLING
 // ═══════════════════════════════════════════════════════
+async function pollOnce(){
+  const reg=await regGet(); if(!reg) return;
+  const room=myRoom(reg); if(!room) return;
+  const prev=S.room?.phase;
+  S.room=room; renderAll();
+  if(room.phase!==prev) onPhase(prev,room.phase);
+}
 function startPolling(){
-  S.pollTimer=setInterval(async()=>{
-    const reg=await regGet(); if(!reg) return;
-    const room=myRoom(reg); if(!room) return;
-    const prev=S.room?.phase;
-    S.room=room; renderAll();
-    if(room.phase!==prev) onPhase(prev,room.phase);
-  },POLL_MS);
+  S.pollTimer=setInterval(pollOnce, POLL_MS);
 }
 
 function onPhase(from,to){
   if(to==='countdown') runCountdown();
   if(to==='racing'){hideCountdown(); if(!RS.running) beginRace();}
-  if(to==='results'){stopClock(); showResults();}
+  if(to==='results'){
+    stopClock();
+    showResults();
+    const wb=document.getElementById('winner-banner');
+    if(wb.style.display!=='flex'&&S.room&&S.room.raceResult&&S.room.raceResult.length){
+      const w=S.room.raceResult[0];
+      const wc=HC[w.horseIdx];
+      const wp=S.room.players.find(p=>p.id===w.playerId);
+      const tot=S.room.players.reduce((s,p)=>s+(p.bet||0),0);
+      wb.style.display='flex';
+      setEl('wb-h','#'+( w.horseIdx+1)+' '+wc.n+' WINS!');
+      setEl('wb-p',wp?wp.name+' takes the pot!':'Horse #'+(w.horseIdx+1)+' wins!');
+      setEl('wb-pay',tot?'Pot: ₱'+Math.round(tot*.9).toLocaleString():'');
+      spawnConfetti();
+    }
+  }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -691,6 +707,7 @@ function renderAll(){
   }
   if(room.phase==='results') renderResults(room);
   if(!RS.running&&room.phase==='lobby') drawIdle();
+  if(room.phase==='racing'&&!RS.running) beginRace();
 }
 
 function setEl(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
@@ -905,6 +922,7 @@ async function resetGame(){
 // ═══════════════════════════════════════════════════════
 function runCountdown(){
   const ov=document.getElementById('countdown-overlay');
+  if(ov.style.display==='flex') return;
   const ne=document.getElementById('countdown-num');
   ov.style.display='flex'; let c=3;
   ne.style.color='var(--accent)';
@@ -1044,6 +1062,7 @@ function mkRng(seed){
 // ═══════════════════════════════════════════════════════
 function beginRace(){
   if(RS.running) return;
+  resizeCanvas(); // ensure canvas has real dimensions
   const room=S.room;
   const seed=room.raceSeed||12345;
   const rng=mkRng(seed);
