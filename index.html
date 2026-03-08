@@ -195,11 +195,28 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 #rightpanel{transition:transform .28s cubic-bezier(.4,0,.2,1) !important;}
 #sidebar.collapsed{transform:translateX(-100%);position:absolute;top:0;bottom:0;left:0;z-index:10;}
 #rightpanel.collapsed{transform:translateX(100%);position:absolute;top:0;bottom:0;right:0;z-index:10;}
-.panel-tab{position:absolute;top:50%;width:18px;height:52px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:10px;color:var(--muted);transition:.15s;z-index:12;user-select:none;transform:translateY(-50%);}
+.panel-tab{
+  position:absolute;top:50%;width:22px;height:72px;
+  background:var(--surface2);border:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  cursor:pointer;font-size:11px;color:var(--muted);
+  transition:.15s;z-index:12;user-select:none;transform:translateY(-50%);
+  writing-mode:vertical-rl;
+}
 .panel-tab:hover{background:var(--surface);color:var(--accent);border-color:var(--accent);}
-#tab-left{right:-18px;border-radius:0 5px 5px 0;border-left:none;}
-#tab-right{left:-18px;border-radius:5px 0 0 5px;border-right:none;}
+#tab-left{right:-22px;border-radius:0 6px 6px 0;border-left:none;}
+#tab-right{left:-22px;border-radius:6px 0 0 6px;border-right:none;}
+/* Full-track mode — both panels hidden */
+body.fulltrack #sidebar,body.fulltrack #rightpanel{transform:translateX(-100%);position:absolute;top:0;bottom:0;left:0;z-index:10;display:flex;}
+body.fulltrack #rightpanel{transform:translateX(100%);left:auto;right:0;}
+#fulltrack-btn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:4px 9px;border-radius:4px;font-size:11px;cursor:pointer;font-family:'DM Mono',monospace;transition:.12s;white-space:nowrap;}
+#fulltrack-btn:hover{border-color:var(--accent);color:var(--accent);}
+body.fulltrack #fulltrack-btn{border-color:var(--accent);color:var(--accent);}
 
+@media(max-width:960px){
+  #sidebar{width:220px;}
+  #rightpanel{width:190px;}
+}
 @media(max-width:680px){
   #sidebar,#rightpanel{display:none;}
   #tab-left,#tab-right{display:none;}
@@ -207,6 +224,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
   #mob-fab{display:flex;}
   .tl h1{font-size:20px;}
   .chip{font-size:9px;padding:2px 6px;}
+  #fulltrack-btn{display:none;}
 }
 </style>
 </head>
@@ -282,12 +300,13 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
     <div class="sync-badge"><span id="sdot"></span><span id="slabel">idle</span></div>
     <!-- F-24 FIX: Session total bet display -->
     <span id="session-total-bet" style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;white-space:nowrap;"></span>
+    <button id="fulltrack-btn" onclick="toggleFullTrack()" title="Expand/collapse track view">⛶ Full Track</button>
   </div>
 
   <div id="main">
     <!-- LEFT SIDEBAR -->
     <div id="sidebar">
-      <div id="tab-left" class="panel-tab" onclick="toggleLeft()" title="Collapse panel">◀</div>
+      <div id="tab-left" class="panel-tab" onclick="toggleLeft()" title="Toggle left panel"><span id="tab-left-icon">◀</span></div>
       <div class="ps">
         <h3>Players</h3>
         <div id="pl-desktop"><div class="empty">Waiting for players…</div></div>
@@ -357,7 +376,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 
     <!-- RIGHT PANEL -->
     <div id="rightpanel">
-      <div id="tab-right" class="panel-tab" onclick="toggleRight()" title="Collapse panel">▶</div>
+      <div id="tab-right" class="panel-tab" onclick="toggleRight()" title="Toggle right panel"><span id="tab-right-icon">▶</span></div>
       <div class="ps">
         <h3>Race Info</h3>
         <div style="font-size:11px;color:var(--muted);line-height:2;">
@@ -435,17 +454,30 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 // ═══════════════════════════════════════════════════════
 // PANEL SLIDE TOGGLE
 // ═══════════════════════════════════════════════════════
-let leftCollapsed=false, rightCollapsed=false;
+let leftCollapsed=false, rightCollapsed=false, fullTrack=false;
 function toggleLeft(){
   leftCollapsed=!leftCollapsed;
   document.getElementById('sidebar').classList.toggle('collapsed',leftCollapsed);
-  document.getElementById('tab-left').textContent=leftCollapsed?'▶':'◀';
+  document.getElementById('tab-left-icon').textContent=leftCollapsed?'▶':'◀';
   setTimeout(()=>{if(canvas)resizeCanvas();if(!RS.running)drawIdle();},300);
 }
 function toggleRight(){
   rightCollapsed=!rightCollapsed;
   document.getElementById('rightpanel').classList.toggle('collapsed',rightCollapsed);
-  document.getElementById('tab-right').textContent=rightCollapsed?'◀':'▶';
+  document.getElementById('tab-right-icon').textContent=rightCollapsed?'◀':'▶';
+  setTimeout(()=>{if(canvas)resizeCanvas();if(!RS.running)drawIdle();},300);
+}
+function toggleFullTrack(){
+  fullTrack=!fullTrack;
+  document.body.classList.toggle('fulltrack',fullTrack);
+  document.getElementById('fulltrack-btn').textContent=fullTrack?'⛶ Show Panels':'⛶ Full Track';
+  if(fullTrack){leftCollapsed=true;rightCollapsed=true;}
+  else{leftCollapsed=false;rightCollapsed=false;
+    document.getElementById('sidebar').classList.remove('collapsed');
+    document.getElementById('rightpanel').classList.remove('collapsed');
+    document.getElementById('tab-left-icon').textContent='◀';
+    document.getElementById('tab-right-icon').textContent='▶';
+  }
   setTimeout(()=>{if(canvas)resizeCanvas();if(!RS.running)drawIdle();},300);
 }
 
@@ -681,30 +713,41 @@ function startPolling(){
   S.pollTimer=setInterval(pollOnce, POLL_MS);
 }
 
+function showWinnerBanner(room){
+  if(!room||!room.raceResult||!room.raceResult.length) return;
+  const wb=document.getElementById('winner-banner');
+  if(wb.style.display==='flex') return; // already showing
+  const w=room.raceResult[0];
+  const wc=HC[w.horseIdx];
+  const wp=room.players.find(p=>p.id===w.playerId);
+  const tot=room.players.reduce((s,p)=>s+(p.bet||0),0);
+  // F-04: verify result vs local if available
+  if(RS.finishOrder.length&&RS.finishOrder[0]!==w.horseIdx){
+    toast('⚠️ Result mismatch — local race differs from server result. Contact host.');
+  }
+  wb.style.display='flex';
+  document.getElementById('wb-h').textContent='🏆 #'+(w.horseIdx+1)+' '+wc.n+' WINS!';
+  document.getElementById('wb-p').textContent=wp?wp.name+' takes the pot!':'Horse #'+(w.horseIdx+1)+' wins!';
+  document.getElementById('wb-pay').textContent=tot?'💰 Pot: ₱'+Math.round(tot*.9).toLocaleString():'';
+  spawnConfetti();
+}
+
 function onPhase(from,to){
   if(to==='countdown') runCountdown();
-  if(to==='racing'){hideCountdown(); if(!RS.running) beginRace();}
+  if(to==='racing'){
+    hideCountdown();
+    if(!RS.running) beginRace();
+    // Auto full-track when race starts so track is fully visible
+    if(!fullTrack) toggleFullTrack();
+  }
   if(to==='results'){
     stopClock();
     showResults();
+    // Restore panels so results are visible
+    if(fullTrack) toggleFullTrack();
     // F-20 FIX: Stop polling 30s after results to save API quota
     setTimeout(()=>{if(S.pollTimer){clearInterval(S.pollTimer);S.pollTimer=null;}},30000);
-    const wb=document.getElementById('winner-banner');
-    if(wb.style.display!=='flex'&&S.room&&S.room.raceResult&&S.room.raceResult.length){
-      const w=S.room.raceResult[0];
-      const wc=HC[w.horseIdx];
-      const wp=S.room.players.find(p=>p.id===w.playerId);
-      const tot=S.room.players.reduce((s,p)=>s+(p.bet||0),0);
-      // F-04 FIX: Verify server result against local computed result
-      if(RS.finishOrder.length&&RS.finishOrder[0]!==w.horseIdx){
-        toast('⚠️ Result mismatch — local race differs from server result. Contact host.');
-      }
-      wb.style.display='flex';
-      setEl('wb-h','#'+( w.horseIdx+1)+' '+wc.n+' WINS!');
-      setEl('wb-p',wp?escHtml(wp.name)+' takes the pot!':'Horse #'+(w.horseIdx+1)+' wins!');
-      setEl('wb-pay',tot?'Pot: ₱'+Math.round(tot*.9).toLocaleString():'');
-      spawnConfetti();
-    }
+    showWinnerBanner(S.room);
   }
 }
 
@@ -984,9 +1027,13 @@ async function startRace(){
   if(room.players.length<2){toast('Need at least 2 players!');return;}
   // F-26 FIX: Warn if no horse selections or bets
   const horsedPlayers=room.players.filter(p=>p.horse!==null);
-  if(horsedPlayers.length<1){toast('No player has selected a horse yet!');return;}
+  if(horsedPlayers.length<1){
+    if(!confirm('No player has selected a horse yet. Start anyway?')) return;
+  }
   const bettedPlayers=room.players.filter(p=>p.bet>0);
   if(bettedPlayers.length<2&&!confirm(`Only ${bettedPlayers.length} player(s) have placed bets. Start anyway?`)) return;
+  // F-14 FIX: confirmedCount properly declared
+  const confirmedCount=room.players.filter(p=>p.confirmed).length;
   if(confirmedCount<2){
     if(!confirm(`Only ${confirmedCount} of ${room.players.length} players have confirmed payment. Start anyway?`)) return;
   }
@@ -998,7 +1045,9 @@ async function startRace(){
   room.raceSeed=_seedArr[0];  // seeded → same race everywhere
   room.phase='countdown';
   const i=reg.rooms.findIndex(r=>r.id===room.id); reg.rooms[i]=room;
-  await regPut(reg); S.room=room; runCountdown();
+  await regPut(reg); S.room=room;
+  if(!fullTrack) toggleFullTrack(); // expand track for countdown
+  runCountdown();
 }
 async function resetGame(){
   if(!confirm('Reset to lobby? All bets and horses will be cleared.')) return;
@@ -1165,9 +1214,12 @@ function mkRng(seed){
 // ═══════════════════════════════════════════════════════
 function beginRace(){
   if(RS.running) return;
+  if(!canvas){console.warn('beginRace: no canvas yet');return;}
   resizeCanvas(); // ensure canvas has real dimensions
+  if(canvas.width<10||canvas.height<10){console.warn('beginRace: canvas too small');return;}
   const room=S.room;
-  const seed=room.raceSeed||12345;
+  if(!room||!room.raceSeed){console.warn('beginRace: no room or seed');return;}
+  const seed=room.raceSeed;
   const rng=mkRng(seed);
   const n=room.horseCount||Math.max(2,room.players.length);
 
@@ -1425,13 +1477,9 @@ async function onFinish(){
   const result=RS.finishOrder.map(idx=>({
     playerId:room.players.find(p=>p.horse===idx)?.id||null, horseIdx:idx
   }));
-  const w=result[0], wp=room.players.find(p=>p.id===w.playerId), wc=HC[w.horseIdx];
-  const tot=room.players.reduce((s,p)=>s+(p.bet||0),0);
-  document.getElementById('winner-banner').style.display='flex';
-  setEl('wb-h',`🏆 #${w.horseIdx+1} ${wc.n} WINS!`);
-  setEl('wb-p',wp?`${escHtml(wp.name)} takes the pot!`:`Horse #${w.horseIdx+1} wins!`);
-  setEl('wb-pay',tot?`💰 Pot: ₱${Math.round(tot*.9).toLocaleString()}`:'');
-  spawnConfetti();
+  // Update local room with result immediately so showWinnerBanner can read it
+  room.raceResult=result;
+  showWinnerBanner(room);
 
   if(S.isHost){
     const reg=await regGet(); if(!reg) return;
