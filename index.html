@@ -414,7 +414,7 @@ body.fulltrack #fulltrack-btn{border-color:rgba(245,200,66,.4);color:var(--accen
 
     <label>Your Nickname</label>
     <input id="inp-name" type="text" placeholder="e.g. LuckyStrike" maxlength="16" autocomplete="off" autocorrect="off" spellcheck="false"/>
-
+    <p style="font-size:10px;color:var(--muted);margin-top:4px;text-align:center;">Select a room below to join, or create your own.</p>
     <!-- ROOM BROWSER -->
     <div class="room-browser-label">
       <span>Available Rooms</span>
@@ -432,7 +432,7 @@ body.fulltrack #fulltrack-btn{border-color:rgba(245,200,66,.4);color:var(--accen
     <div id="horse-count-grid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:6px;"></div>
     <button class="btn bg bfull" style="margin-top:10px;" onclick="createGame()">🎯 Create New Room</button>
 
-    <p style="font-size:10px;color:var(--muted);margin-top:10px;text-align:center;">Select a room above to join, or create your own.</p>
+
 
     <!-- GCash Numbers Quick Reference -->
     <div id="lobby-gcash-nums" style="margin-top:10px;"></div>
@@ -2609,6 +2609,9 @@ function renderLobbyGcashNums(){
       <span style="color:var(--muted);font-size:10px;">${escHtml(g.name)}${g.isDefault?' <span style="color:var(--accent);">★ default</span>':''}</span>
     </div>`).join('')}
     <p style="font-size:10px;color:var(--muted);margin-top:4px;text-align:center;">Send your bet to one of these numbers via GCash</p>
+	    <p style="font-size:11px;color:var(--muted);margin-top:10px;text-align:center;">
+      Send your Gcash payment screenshots <a href="https://m.me/j/AbaKxgEniPoIHgF1/" target="_blank" style="color:var(--accent,#4fc3f7);font-weight:600;text-decoration:underline;">here</a>.
+    </p>
   </div>`;
 }
 
