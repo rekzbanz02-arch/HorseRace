@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-<title>🏇 GrandStake — Live Horse Racing</title>
+<title>🏇 GrandStake — Live Horse Racing v7</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0a0c0f;--surface:#111418;--surface2:#181c22;--border:#22282f;--accent:#f5c842;--green:#3ddc84;--red:#ff5252;--blue:#4fc3f7;--text:#e8eaf0;--muted:#6b7280;--orange:#f97316;}
@@ -64,7 +64,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 }
 #track-container{
   position:absolute;top:0;left:0;width:100%;height:100%;
-  transform-origin:0 0;will-change:transform;cursor:grab;
+  transform-origin:center center;will-change:transform;cursor:grab;
 }
 #track-container.panning{cursor:grabbing;}
 #track-canvas{display:block;width:100%;height:100%;}
@@ -321,6 +321,61 @@ body.in-fullscreen #trackarea{height:100vh;}
 .div{height:1px;background:var(--border);margin:9px 0;}
 ::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 
+/* ── SETTINGS & HELP MODAL ── */
+.sh-overlay{position:fixed;inset:0;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;z-index:300;backdrop-filter:blur(6px);padding:14px;}
+.sh-modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;display:flex;flex-direction:column;}
+.sh-header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.sh-header h2{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--accent);letter-spacing:2px;}
+.sh-close{width:32px;height:32px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:.12s;}
+.sh-close:hover{border-color:var(--red);color:var(--red);}
+.sh-body{padding:18px 20px;flex:1;}
+.sh-section{margin-bottom:18px;}
+.sh-section-title{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1.5px;color:var(--accent);margin-bottom:8px;border-bottom:1px solid var(--border);padding-bottom:5px;}
+
+/* GCash number list */
+.gcash-list{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
+.gcash-item{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;}
+.gcash-item-info{flex:1;min-width:0;}
+.gcash-item-num{font-family:'DM Mono',monospace;font-size:13px;color:var(--blue);font-weight:600;}
+.gcash-item-name{font-size:10px;color:var(--muted);margin-top:1px;}
+.gcash-item-default{font-size:9px;color:var(--accent);background:rgba(245,200,66,.12);border:1px solid rgba(245,200,66,.3);padding:1px 5px;border-radius:3px;flex-shrink:0;}
+.gcash-item-actions{display:flex;gap:4px;flex-shrink:0;}
+.gci-btn{width:26px;height:26px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:.12s;}
+.gci-btn:hover.edit{border-color:var(--blue);color:var(--blue);}
+.gci-btn:hover.del{border-color:var(--red);color:var(--red);}
+.gci-btn:hover.setdef{border-color:var(--accent);color:var(--accent);}
+.gcash-add-form{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px;margin-top:8px;}
+.gcash-add-form label{display:block;font-size:10px;color:var(--muted);margin-bottom:3px;margin-top:8px;text-transform:uppercase;letter-spacing:.6px;}
+.gcash-add-form label:first-child{margin-top:0;}
+.gcash-add-form input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:6px;font-family:'DM Mono',monospace;font-size:12px;outline:none;}
+.gcash-add-form input:focus{border-color:var(--accent);}
+.gcash-form-row{display:flex;gap:6px;margin-top:10px;}
+
+/* Cleanup section */
+.cleanup-info{font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:10px;background:rgba(249,115,22,.07);border:1px solid rgba(249,115,22,.2);border-radius:6px;padding:8px 10px;}
+
+/* Live rankings in Race Info */
+.live-rank-box{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:8px 10px;margin-top:6px;}
+.live-rank-title{font-family:'Bebas Neue',sans-serif;font-size:11px;color:var(--accent);letter-spacing:1px;margin-bottom:5px;}
+.live-rank-row{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;}
+.live-rank-medal{font-size:14px;flex-shrink:0;width:18px;}
+.live-rank-horse{font-weight:600;flex:1;}
+.live-rank-pct{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);}
+
+/* Duration display */
+.dur-both{text-align:center;margin-bottom:2px;}
+.dur-both .dur-val{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--accent);line-height:1;}
+.dur-both .dur-sub{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;}
+
+/* Help section */
+.help-step{display:flex;gap:10px;margin-bottom:14px;align-items:flex-start;}
+.help-step-num{width:26px;height:26px;border-radius:50%;background:rgba(245,200,66,.15);border:1px solid rgba(245,200,66,.3);color:var(--accent);font-family:'Bebas Neue',sans-serif;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.help-step-body h4{font-size:12px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.help-step-body p{font-size:11px;color:var(--muted);line-height:1.6;}
+.help-tip{background:rgba(79,195,247,.07);border:1px solid rgba(79,195,247,.2);border-radius:6px;padding:8px 10px;font-size:11px;color:var(--blue);line-height:1.6;margin-bottom:10px;}
+.help-tip b{color:var(--text);}
+
+
 /* ── PANEL SLIDE TOGGLE ── */
 #sidebar{transition:transform .28s cubic-bezier(.4,0,.2,1) !important;}
 #rightpanel{transition:transform .28s cubic-bezier(.4,0,.2,1) !important;}
@@ -388,6 +443,9 @@ body.fulltrack #fulltrack-btn{border-color:rgba(245,200,66,.4);color:var(--accen
     <button class="btn bg bfull" style="margin-top:10px;" onclick="createGame()">🎯 Create New Room</button>
 
     <p style="font-size:10px;color:var(--muted);margin-top:10px;text-align:center;">Select a room above to join, or create your own.</p>
+
+    <!-- GCash Numbers Quick Reference -->
+    <div id="lobby-gcash-nums" style="margin-top:10px;"></div>
   </div>
 </div>
 
@@ -401,6 +459,8 @@ body.fulltrack #fulltrack-btn{border-color:rgba(245,200,66,.4);color:var(--accen
     <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:5px;">Send to:</div>
     <div class="gc-phone" id="gc-phone">09XX-XXX-XXXX</div>
     <div class="gc-acct" id="gc-acct">Account Name</div>
+    <!-- Saved GCash numbers quick-select -->
+    <div id="gc-saved-nums" style="margin-bottom:6px;"></div>
     <div class="div"></div>
     <label>GCash Reference Number (13 digits)</label>
     <input id="gc-ref" type="text" placeholder="e.g. 1234567890123" maxlength="20" inputmode="numeric"/>
@@ -431,6 +491,14 @@ body.fulltrack #fulltrack-btn{border-color:rgba(245,200,66,.4);color:var(--accen
     <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
       <div class="sync-badge"><span id="sdot"></span><span id="slabel">idle</span></div>
       <span id="session-total-bet" style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;white-space:nowrap;"></span>
+      <!-- Help button -->
+      <button class="tb-icon-btn" onclick="openHelp()" title="Help">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+      </button>
+      <!-- Settings button -->
+      <button class="tb-icon-btn" onclick="openSettings()" title="Settings">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
       <!-- Full Track toggle -->
       <button id="fulltrack-btn" class="tb-icon-btn" onclick="toggleFullTrack()" title="Toggle full track view">
         <svg id="ft-icon-expand" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
@@ -477,6 +545,7 @@ body.fulltrack #fulltrack-btn{border-color:rgba(245,200,66,.4);color:var(--accen
         <span class="hlabel">Race Duration</span>
         <div class="dur-slider-wrap">
           <div class="dur-val" id="dur-val-d">60s</div>
+          <div id="dur-sub-d" style="text-align:center;font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:3px;">(1 minute)</div>
           <!-- F-23 FIX: Constrained range 15-180s with recommended presets -->
           <input type="range" id="dur-slider-d" min="15" max="180" value="60" oninput="syncDurSlider('d')"/>
           <div class="dur-label"><span>15s</span><span>180s</span></div>
@@ -511,7 +580,7 @@ body.fulltrack #fulltrack-btn{border-color:rgba(245,200,66,.4);color:var(--accen
           <div class="wb-sub" id="wb-p"></div>
           <div class="wb-pay" id="wb-pay"></div>
           <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center;padding:0 12px;">
-            <button class="btn bs" onclick="hideWinner()">📊 See Results</button>
+            <button class="btn bs" onclick="hideWinnerAndShowResults()">✕ Close</button>
           </div>
         </div>
         <!-- Landscape nudge -->
@@ -559,6 +628,13 @@ body.fulltrack #fulltrack-btn{border-color:rgba(245,200,66,.4);color:var(--accen
           <div>Pot: <span id="ri-pot" style="color:var(--green);font-family:'DM Mono',monospace;">₱0</span></div>
           <div style="font-size:10px;color:var(--muted);margin-top:2px;">Winner receives 90% of pot</div>
         </div>
+        <!-- Live Race Rankings (shown only during race) -->
+        <div id="live-rank-panel" style="display:none;">
+          <div class="live-rank-box">
+            <div class="live-rank-title">🏇 LIVE POSITIONS</div>
+            <div id="live-rank-list"></div>
+          </div>
+        </div>
       </div>
       <div class="ps" id="rs-d" style="display:none;"><h3>🏆 Results</h3><div id="rl-d"></div></div>
       <div class="ps"><h3>Odds</h3><div id="odds-d"><div class="empty">No bets yet</div></div></div>
@@ -597,6 +673,7 @@ body.fulltrack #fulltrack-btn{border-color:rgba(245,200,66,.4);color:var(--accen
       <span class="hlabel">Race Duration</span>
       <div class="dur-slider-wrap">
         <div class="dur-val" id="dur-val-m">60s</div>
+        <div id="dur-sub-m" style="text-align:center;font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:3px;">(1 minute)</div>
         <input type="range" id="dur-slider-m" min="15" max="180" value="60" oninput="syncDurSlider('m')"/>
         <div class="dur-label"><span>15s</span><span>180s</span></div>
       </div>
@@ -619,14 +696,374 @@ body.fulltrack #fulltrack-btn{border-color:rgba(245,200,66,.4);color:var(--accen
     </div>
   </div>
 </div>
+
+<!-- ═══════════════════════ SETTINGS MODAL ═══════════════════════ -->
+<div class="sh-overlay" id="screen-settings" style="display:none;">
+  <div class="sh-modal">
+    <div class="sh-header">
+      <h2>⚙️ Settings</h2>
+      <button class="sh-close" onclick="closeSettings()">✕</button>
+    </div>
+    <div class="sh-body">
+
+      <!-- GCash Numbers -->
+      <div class="sh-section">
+        <div class="sh-section-title">💳 GCash Numbers</div>
+        <p style="font-size:11px;color:var(--muted);margin-bottom:10px;">Manage GCash numbers displayed to players for sending bets. The default number will be pre-filled when creating a room.</p>
+        <div class="gcash-list" id="settings-gcash-list">
+          <div class="empty">No GCash numbers saved yet.</div>
+        </div>
+        <div class="gcash-add-form" id="gcash-add-form">
+          <div style="font-size:11px;color:var(--accent);font-weight:600;margin-bottom:6px;" id="gcash-form-title">➕ Add GCash Number</div>
+          <input type="hidden" id="gcash-edit-id" value=""/>
+          <label>GCash Number</label>
+          <input id="gcash-form-num" type="tel" placeholder="09XX-XXX-XXXX" maxlength="15" inputmode="numeric"/>
+          <label>Account Name</label>
+          <input id="gcash-form-name" type="text" placeholder="Juan Dela Cruz" maxlength="40"/>
+          <div class="gcash-form-row">
+            <button class="btn bs" style="flex:1;" onclick="cancelGcashEdit()">Cancel</button>
+            <button class="btn bp" style="flex:1;" onclick="saveGcashEntry()">💾 Save</button>
+          </div>
+        </div>
+        <button class="btn bs bfull" style="margin-top:8px;" onclick="startAddGcash()">➕ Add New Number</button>
+      </div>
+
+      <!-- Game Cleanup -->
+      <div class="sh-section">
+        <div class="sh-section-title">🧹 Game Record Cleanup</div>
+        <div class="cleanup-info">
+          ⚠️ Cleanup removes finished, inactive, null, and empty game records from cloud storage. Active and running games are never removed. This keeps the room list clean and fast.
+        </div>
+        <div id="cleanup-status" style="font-size:11px;color:var(--muted);margin-bottom:8px;"></div>
+        <button class="btn bs bfull" onclick="manualCleanup()">🗑️ Clean Up Inactive Games Now</button>
+      </div>
+
+      <!-- About -->
+      <div class="sh-section">
+        <div class="sh-section-title">ℹ️ About</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.7;">
+          <b style="color:var(--text);">GrandStake v7</b> — Live Multiplayer Horse Racing<br>
+          Powered by JSONBin · Bet via GCash · Real-time sync<br>
+          <span style="color:var(--accent);">10% house edge</span> · Winner receives 90% of pot
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ HELP MODAL ═══════════════════════ -->
+<div class="sh-overlay" id="screen-help" style="display:none;">
+  <div class="sh-modal">
+    <div class="sh-header">
+      <h2>❓ How to Play</h2>
+      <button class="sh-close" onclick="closeHelp()">✕</button>
+    </div>
+    <div class="sh-body">
+
+      <div class="help-tip">
+        <b>Welcome to GrandStake!</b> This is a live multiplayer horse racing game where you bet real money via GCash. Here's everything you need to know to get started.
+      </div>
+
+      <div class="sh-section">
+        <div class="sh-section-title">🚪 Joining a Room</div>
+        <div class="help-step">
+          <div class="help-step-num">1</div>
+          <div class="help-step-body">
+            <h4>Enter Your Nickname</h4>
+            <p>Type a unique nickname in the lobby. This is how other players will see you during the race.</p>
+          </div>
+        </div>
+        <div class="help-step">
+          <div class="help-step-num">2</div>
+          <div class="help-step-body">
+            <h4>Choose a Room</h4>
+            <p>Select an available room from the list (green dot = open). Rooms with a red dot are already racing. Tap <b>Join Selected Room</b> to enter.</p>
+          </div>
+        </div>
+        <div class="help-step">
+          <div class="help-step-num">3</div>
+          <div class="help-step-body">
+            <h4>Create Your Own Room</h4>
+            <p>Tap <b>Create New Room</b> to become the host. You choose the number of horses (2–10). As host, you control when the race starts.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="sh-section">
+        <div class="sh-section-title">🐎 Placing a Bet</div>
+        <div class="help-step">
+          <div class="help-step-num">1</div>
+          <div class="help-step-body">
+            <h4>Pick Your Horse</h4>
+            <p>In the <b>Pick Horse</b> panel, tap on a horse to claim it. Each horse has a unique color and number. Only one player per horse!</p>
+          </div>
+        </div>
+        <div class="help-step">
+          <div class="help-step-num">2</div>
+          <div class="help-step-body">
+            <h4>Set Your Bet Amount</h4>
+            <p>Use the preset buttons (₱50, ₱100, ₱200, ₱500, ₱1K) or type a custom amount. Minimum bet is ₱1.</p>
+          </div>
+        </div>
+        <div class="help-step">
+          <div class="help-step-num">3</div>
+          <div class="help-step-body">
+            <h4>Pay via GCash</h4>
+            <p>Tap <b>Pay via GCash &amp; Lock Bet</b>. A screen will appear with the host's GCash number and the exact amount to send.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="sh-section">
+        <div class="sh-section-title">💳 GCash Payment Process</div>
+        <div class="help-step">
+          <div class="help-step-num">1</div>
+          <div class="help-step-body">
+            <h4>Send the Exact Amount</h4>
+            <p>Open your GCash app and send the <b>exact peso amount</b> to the number shown. Double-check the account name before sending.</p>
+          </div>
+        </div>
+        <div class="help-step">
+          <div class="help-step-num">2</div>
+          <div class="help-step-body">
+            <h4>Enter Your Reference Number</h4>
+            <p>After sending, GCash will give you a <b>13-digit reference number</b>. Enter this in the Reference Number field to prove your payment.</p>
+          </div>
+        </div>
+        <div class="help-step">
+          <div class="help-step-num">3</div>
+          <div class="help-step-body">
+            <h4>Wait for Host Confirmation</h4>
+            <p>The host will verify your payment. Once confirmed, your status shows <span style="color:var(--green);">✓ Ready</span>. The host starts the race when all players are ready.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="sh-section">
+        <div class="sh-section-title">🏆 How the Winner is Determined</div>
+        <div class="help-step">
+          <div class="help-step-num">1</div>
+          <div class="help-step-body">
+            <h4>Seeded Race — Fully Fair</h4>
+            <p>Each race uses a <b>cryptographically random seed</b> set by the host. All players see the exact same race — there is no manipulation possible.</p>
+          </div>
+        </div>
+        <div class="help-step">
+          <div class="help-step-num">2</div>
+          <div class="help-step-body">
+            <h4>First Horse to the Finish Line</h4>
+            <p>The horse that crosses the finish line first wins. Horses have random bursts of speed, energy curves, and rubber-band mechanics to keep races exciting.</p>
+          </div>
+        </div>
+        <div class="help-step">
+          <div class="help-step-num">3</div>
+          <div class="help-step-body">
+            <h4>Payout</h4>
+            <p>The winner receives <b>90% of the total pot</b>. The remaining 10% is a service fee retained by the host. If no player bet on the winning horse, the host issues refunds.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="help-tip">
+        <b>💡 Tips:</b> Watch the live positions panel on the right during the race to track your horse. Use the zoom buttons to get a closer look at the action. Good luck! 🍀
+      </div>
+
+      <button class="btn bp bfull" onclick="closeHelp()" style="margin-top:8px;">Got it — Let's Race! 🏇</button>
+    </div>
+  </div>
+</div>
+
 <button id="mob-fab" onclick="toggleDrawer()">☰</button>
+
 
 <script>
 'use strict';
 
 // ═══════════════════════════════════════════════════════
-// PANEL SLIDE TOGGLE
+// GCASH NUMBER MANAGEMENT (localStorage)
 // ═══════════════════════════════════════════════════════
+const GCASH_STORE_KEY = 'gs_gcash_numbers';
+
+function gcashLoad(){
+  try{ return JSON.parse(localStorage.getItem(GCASH_STORE_KEY)||'[]'); }
+  catch(e){ return []; }
+}
+function gcashSave(list){
+  try{ localStorage.setItem(GCASH_STORE_KEY, JSON.stringify(list)); }
+  catch(e){}
+}
+function gcashGetDefault(){
+  const list = gcashLoad();
+  return list.find(g=>g.isDefault) || list[0] || null;
+}
+
+function renderGcashList(){
+  const list = gcashLoad();
+  const container = document.getElementById('settings-gcash-list');
+  if(!container) return;
+  if(!list.length){
+    container.innerHTML='<div class="empty">No GCash numbers saved yet.</div>';
+    return;
+  }
+  container.innerHTML = list.map((g,i)=>`
+    <div class="gcash-item">
+      <div class="gcash-item-info">
+        <div class="gcash-item-num">${escHtml(g.number)}</div>
+        <div class="gcash-item-name">${escHtml(g.name)}</div>
+      </div>
+      ${g.isDefault?'<span class="gcash-item-default">DEFAULT</span>':''}
+      <div class="gcash-item-actions">
+        ${!g.isDefault?`<button class="gci-btn setdef" title="Set as default" onclick="gcashSetDefault(${i})">★</button>`:''}
+        <button class="gci-btn edit" title="Edit" onclick="gcashStartEdit(${i})">✏</button>
+        <button class="gci-btn del" title="Delete" onclick="gcashDelete(${i})">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+function startAddGcash(){
+  document.getElementById('gcash-edit-id').value = '';
+  document.getElementById('gcash-form-num').value = '';
+  document.getElementById('gcash-form-name').value = '';
+  document.getElementById('gcash-form-title').textContent = '➕ Add GCash Number';
+  document.getElementById('gcash-add-form').style.display = 'block';
+}
+function cancelGcashEdit(){
+  document.getElementById('gcash-add-form').style.display = 'none';
+  document.getElementById('gcash-edit-id').value = '';
+}
+function gcashStartEdit(idx){
+  const list = gcashLoad();
+  const g = list[idx]; if(!g) return;
+  document.getElementById('gcash-edit-id').value = String(idx);
+  document.getElementById('gcash-form-num').value = g.number;
+  document.getElementById('gcash-form-name').value = g.name;
+  document.getElementById('gcash-form-title').textContent = '✏️ Edit GCash Number';
+  document.getElementById('gcash-add-form').style.display = 'block';
+}
+function saveGcashEntry(){
+  const num = document.getElementById('gcash-form-num').value.trim();
+  const name = document.getElementById('gcash-form-name').value.trim();
+  if(!num){ toast('Enter a GCash number!'); return; }
+  if(!name){ toast('Enter account name!'); return; }
+  const list = gcashLoad();
+  const editId = document.getElementById('gcash-edit-id').value;
+  if(editId !== ''){
+    const idx = parseInt(editId);
+    if(list[idx]){ list[idx].number = num; list[idx].name = name; }
+  } else {
+    list.push({ number: num, name: name, isDefault: list.length === 0 });
+  }
+  gcashSave(list);
+  renderGcashList();
+  cancelGcashEdit();
+  toast('✅ GCash number saved!');
+}
+function gcashDelete(idx){
+  const list = gcashLoad();
+  if(!list[idx]) return;
+  if(!confirm(`Delete ${list[idx].number} (${list[idx].name})?`)) return;
+  const wasDefault = list[idx].isDefault;
+  list.splice(idx,1);
+  if(wasDefault && list.length) list[0].isDefault = true;
+  gcashSave(list);
+  renderGcashList();
+}
+function gcashSetDefault(idx){
+  const list = gcashLoad();
+  list.forEach((g,i) => g.isDefault = i===idx);
+  gcashSave(list);
+  renderGcashList();
+  toast('✅ Default GCash number updated');
+}
+
+// ═══════════════════════════════════════════════════════
+// SETTINGS MODAL
+// ═══════════════════════════════════════════════════════
+function openSettings(){
+  document.getElementById('screen-settings').style.display='flex';
+  document.getElementById('gcash-add-form').style.display='none';
+  renderGcashList();
+}
+function closeSettings(){ document.getElementById('screen-settings').style.display='none'; }
+
+// ═══════════════════════════════════════════════════════
+// HELP MODAL
+// ═══════════════════════════════════════════════════════
+function openHelp(){ document.getElementById('screen-help').style.display='flex'; }
+function closeHelp(){ document.getElementById('screen-help').style.display='none'; }
+
+// ═══════════════════════════════════════════════════════
+// GAME RECORD CLEANUP
+// ═══════════════════════════════════════════════════════
+// Criteria for removal: phase=results, phase=null/undefined, no id, no players, or created >4h ago with no activity
+function isStaleRoom(r, now){
+  if(!r || !r.id) return true; // null / no ID
+  if(!r.phase) return true; // undefined phase
+  if(r.phase === 'results') return true; // finished game
+  // Empty/ghost rooms (no players, older than 30 minutes)
+  if((!r.players || r.players.length === 0) && ((now - (r.createdAt||0)) > 1800000)) return true;
+  // Uncontinued lobby: created > 4 hours ago, still in lobby with <2 players
+  if(r.phase === 'lobby' && r.players?.length < 2 && ((now - (r.createdAt||0)) > 14400000)) return true;
+  return false;
+}
+function isActiveRoom(r){
+  if(!r || !r.id || !r.phase) return false;
+  return r.phase === 'lobby' || r.phase === 'countdown' || r.phase === 'racing';
+}
+
+async function manualCleanup(){
+  const statusEl = document.getElementById('cleanup-status');
+  if(statusEl) statusEl.textContent = '⏳ Fetching records…';
+  const reg = await regGet();
+  if(!reg){ toast('Could not fetch records'); return; }
+  const now = Date.now();
+  const before = reg.rooms.length;
+  // Never remove currently active room
+  reg.rooms = reg.rooms.filter(r => {
+    if(r.id === S.room?.id) return true; // protect current room
+    return isActiveRoom(r) && !isStaleRoom(r, now);
+  });
+  const removed = before - reg.rooms.length;
+  if(removed === 0){
+    if(statusEl) statusEl.textContent = '✅ No stale records found — all clean!';
+    toast('✅ Nothing to clean up');
+    return;
+  }
+  await regPut(reg);
+  if(statusEl) statusEl.textContent = `✅ Removed ${removed} stale record(s). ${reg.rooms.length} active room(s) remain.`;
+  toast(`🗑️ Cleaned ${removed} inactive game(s)`);
+}
+
+// Auto-cleanup on startup (silent, before app loads)
+async function autoCleanupOnStartup(){
+  try{
+    const reg = await regGet();
+    if(!reg) return;
+    const now = Date.now();
+    const before = reg.rooms.length;
+    reg.rooms = reg.rooms.filter(r => {
+      if(!r || !r.id) return false;
+      return !isStaleRoom(r, now);
+    });
+    if(reg.rooms.length < before){
+      reg._version = (reg._version||0) + 1;
+      await bPut(reg);
+    }
+  }catch(e){}
+}
+
+// ═══════════════════════════════════════════════════════
+// WINNER BANNER — Close button behavior
+// ═══════════════════════════════════════════════════════
+function hideWinnerAndShowResults(){
+  document.getElementById('winner-banner').style.display='none';
+  renderAll();
+  // Show results panel prominently
+  const rs = document.getElementById('rs-d');
+  if(rs){ rs.style.display='block'; rs.scrollIntoView({behavior:'smooth', block:'nearest'}); }
+}
+
+
 let leftCollapsed=false, rightCollapsed=false, fullTrack=false;
 function toggleLeft(){
   leftCollapsed=!leftCollapsed;
@@ -732,6 +1169,9 @@ const HC = [
 const S  = {myId:null, myName:'', isHost:false, room:null, pollTimer:null, selectedRoomId:null};
 const RS = {horses:[], running:false, finished:false, finishOrder:[], raceStartTs:null};
 let canvas, ctx, animFrame, drawerOpen=false, clockTimer=null;
+// Silent auto-refresh for lobby room list
+let _lobbyRefreshTimer = null;
+const LOBBY_REFRESH_MS = 3000;
 
 // ═══════════════════════════════════════════════════════
 // JSONBIN  — registry stores { rooms:[…] }
@@ -815,19 +1255,28 @@ function myRoom(reg){ return reg.rooms.find(r=>r.id===S.room?.id)||null; }
 // ═══════════════════════════════════════════════════════
 // ROOM BROWSER
 // ═══════════════════════════════════════════════════════
-async function refreshRooms(){
+async function refreshRooms(silent=false){
   const el=document.getElementById('room-list');
-  el.innerHTML='<div class="room-loading"><div class="spin"></div> Loading…</div>';
+  if(!el) return;
+  if(!silent){
+    el.innerHTML='<div class="room-loading"><div class="spin"></div> Loading…</div>';
+  }
   const reg=await regGet();
-  if(!reg){el.innerHTML='<div class="room-empty">Could not load — check connection</div>';return;}
-  const rooms=reg.rooms||[];
+  if(!reg){
+    if(!silent) el.innerHTML='<div class="room-empty">Could not load — check connection</div>';
+    return;
+  }
+  const rooms=(reg.rooms||[]).filter(r=>r&&r.id&&r.phase&&r.phase!=='results');
   if(!rooms.length){el.innerHTML='<div class="room-empty">No rooms yet. Be the first to create one!</div>';return;}
 
+  // Preserve selected room during silent refresh
+  const prevSel = S.selectedRoomId;
   el.innerHTML=rooms.map(room=>{
     const {cls,label}=roomStatus(room);
     const cur=room.players?.length||0, tot=room.horseCount||10;
     const joinable=room.phase==='lobby'&&cur<tot;
-    return `<div class="room-row${joinable?'':' disabled'}" data-id="${escHtml(room.id)}" onclick="selectRoom('${escHtml(room.id)}',${joinable})">
+    const isSel = room.id === prevSel;
+    return `<div class="room-row${joinable?'':' disabled'}${isSel?' sel':''}" data-id="${escHtml(room.id)}" onclick="selectRoom('${escHtml(room.id)}',${joinable})">
       <div class="rdot ${cls}"></div>
       <div class="rinfo">
         <div class="rname">${room.id}</div>
@@ -836,6 +1285,24 @@ async function refreshRooms(){
       <div class="rcount">${cur}/${tot} players<br><span style="font-size:9px;">${joinable?'🟢 Open':'🔒 Locked'}</span></div>
     </div>`;
   }).join('');
+  // Restore join button state if selection preserved
+  if(prevSel && rooms.find(r=>r.id===prevSel)){
+    const btn=document.getElementById('join-btn');
+    if(btn){ btn.disabled=false; btn.textContent=`🚪 Join Room ${prevSel}`; }
+  }
+}
+
+function startLobbyAutoRefresh(){
+  stopLobbyAutoRefresh();
+  _lobbyRefreshTimer = setInterval(()=>{
+    // Only auto-refresh when lobby screen is visible and user hasn't entered app
+    if(document.getElementById('screen-lobby').style.display!=='none' && !S.room){
+      refreshRooms(true); // silent=true → no loading spinner
+    }
+  }, LOBBY_REFRESH_MS);
+}
+function stopLobbyAutoRefresh(){
+  if(_lobbyRefreshTimer){ clearInterval(_lobbyRefreshTimer); _lobbyRefreshTimer=null; }
 }
 
 function roomStatus(room){
@@ -872,13 +1339,16 @@ async function createGame(){
   if(!name){toast('Enter your nickname!');return;}
   const hc=parseInt(document.querySelector('#horse-count-grid .hcbtn.sel')?.dataset.n||'4');
   S.myId=getOrCreatePlayerId(); S.myName=name; S.isHost=true;
+  // Pre-populate GCash from stored default if available
+  const gcDefault = gcashGetDefault();
   const room={
     // F-17 FIX: 8-char room ID for ~1.7 trillion combinations
     id:'R'+Math.random().toString(36).substr(2,8).toUpperCase(),
     phase:'lobby', host:S.myId, horseCount:hc,
     players:[{id:S.myId,name,horse:null,bet:0,gcashRef:null,gcashSender:null,confirmed:false}],
     raceResult:null, raceSeed:null, raceStartAt:null, finishedAt:null,
-    gcashPhone:'', gcashAcctName:'', createdAt:Date.now()
+    gcashPhone: gcDefault?.number || '', gcashAcctName: gcDefault?.name || '',
+    createdAt:Date.now()
   };
   const ok=await roomSave(room);
   if(!ok){toast('Could not reach cloud — check internet');return;}
@@ -909,6 +1379,7 @@ async function joinSelected(){
 
 function enterApp(){
   document.getElementById('screen-lobby').style.display='none';
+  stopLobbyAutoRefresh(); // Stop lobby polling once inside app
   // F-13 FIX: Store session for reconnect
   sessionStorage.setItem('gs_session',JSON.stringify({myId:S.myId,myName:S.myName,roomId:S.room?.id,isHost:S.isHost}));
   if(S.isHost){
@@ -991,7 +1462,12 @@ function renderAll(){
   ['ri-horses','ri-h-m'].forEach(id=>setEl(id,numH));
   ['ri-pot','ri-p-m'].forEach(id=>setEl(id,'₱'+pot.toLocaleString()));
   const dur=room.raceDur||60;
-  setEl('ri-dur', dur+'s');
+  // Duration with both units
+  const mins = Math.floor(dur/60);
+  const secs = dur % 60;
+  let durLabel = dur + 's';
+  if(mins >= 1) durLabel = dur + 's (' + (secs === 0 ? mins + ' min' + (mins>1?'s':'') : mins + 'm ' + secs + 's') + ')';
+  setEl('ri-dur', durLabel);
 
   const pl=mkPlayers(room);
   setHTML('pl-desktop',pl||'<div class="empty">No players yet</div>');
@@ -1021,6 +1497,9 @@ function renderAll(){
   if(room.phase==='results') renderResults(room);
   if(!RS.running&&room.phase==='lobby') drawIdle();
   if(room.phase==='racing'&&!RS.running) beginRace();
+  // Show/hide live rankings panel
+  const lrp = document.getElementById('live-rank-panel');
+  if(lrp) lrp.style.display = (room.phase==='racing') ? 'block' : 'none';
 }
 
 function setEl(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
@@ -1051,8 +1530,10 @@ function mkHorseGrid(room){
   const count=room.horseCount||Math.max(2,room.players.length);
   const taken=room.players.filter(p=>p.id!==S.myId&&p.horse!==null).map(p=>p.horse);
   const me=room.players.find(p=>p.id===S.myId), myH=me?.horse??null;
+  // Only activate buttons for slots within player count
   return Array.from({length:count},(_,i)=>{
     const c=HC[i],isTaken=taken.includes(i),isSel=myH===i;
+    // All slots within horseCount are valid; disable taken ones or out-of-range
     return `<div class="hcard ${isSel?'sel':''} ${isTaken?'taken':''}" onclick="pickHorse(${i})" style="${isSel?`border-color:${c.h};background:${c.h}15;`:''}">
       <div class="he">🐎</div>
       <div class="hn" style="color:${c.h};">#${i+1}</div>
@@ -1165,16 +1646,35 @@ function openGcash(){
   if(bet>999999){toast('Bet too large!');return;}
   _pendingBet=bet; // lock bet here
   setEl('gc-amt','₱'+bet.toLocaleString());
-  setEl('gc-phone',S.room.gcashPhone||'09XX-XXX-XXXX');
-  setEl('gc-acct',S.room.gcashAcctName||'GrandStake Host');
+  // Use room GCash if set, otherwise fall back to stored default
+  const gcDefault = gcashGetDefault();
+  const phoneToShow = S.room.gcashPhone || gcDefault?.number || '09XX-XXX-XXXX';
+  const acctToShow  = S.room.gcashAcctName || gcDefault?.name || 'GrandStake Host';
+  setEl('gc-phone', phoneToShow);
+  setEl('gc-acct',  acctToShow);
   // F-07 FIX: Show house edge disclosure and expected payout
   const potAfter=(S.room.players.reduce((s,p)=>s+(p.bet||0),0)+bet);
   setEl('gc-payout-info','Winner receives 90% of the pot. 10% is retained by the host as a service fee. Current pot after your bet: ₱'+potAfter.toLocaleString()+' → winner gets ₱'+Math.round(potAfter*.9).toLocaleString());
   document.getElementById('gc-ref').value='';
   document.getElementById('gc-sender').value='';
+  // Show saved GCash numbers if available (for reference)
+  const gcList = gcashLoad();
+  const savedDiv = document.getElementById('gc-saved-nums');
+  if(savedDiv && gcList.length > 1){
+    savedDiv.innerHTML = `<div style="font-size:10px;color:var(--muted);text-align:center;margin-bottom:4px;">Saved Numbers:</div>`+
+      gcList.map(g=>`<div onclick="selectGcashNum('${escHtml(g.number)}','${escHtml(g.name)}')" style="cursor:pointer;padding:5px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;font-size:11px;transition:.1s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+        <span style="font-family:'DM Mono';color:var(--blue);">${escHtml(g.number)}</span>
+        <span style="color:var(--muted);">${escHtml(g.name)}</span>
+      </div>`).join('');
+  } else if(savedDiv){ savedDiv.innerHTML=''; }
   document.getElementById('screen-gcash').style.display='flex';
 }
 function closeGcash(){document.getElementById('screen-gcash').style.display='none';}
+function selectGcashNum(num, name){
+  setEl('gc-phone', num);
+  setEl('gc-acct', name);
+  toast('Selected: '+num);
+}
 // F-22 FIX: Show summary screen before final confirmation
 function showGcashSummary(){
   const ref=document.getElementById('gc-ref').value.trim();
@@ -1231,9 +1731,16 @@ function syncDurSlider(side){
   const other=side==='d'?'m':'d';
   const otherEl=document.getElementById('dur-slider-'+other);
   if(otherEl) otherEl.value=val;
+  // Format: "60s (1 minute)"
+  const mins=Math.floor(val/60), secs=val%60;
+  let label=val+'s';
+  let sub='';
+  if(mins>=1) sub='('+( secs===0 ? mins+' min'+(mins>1?'s':'') : mins+'m '+secs+'s' )+')';
   document.getElementById('dur-val-d').textContent=val+'s';
+  const subd=document.getElementById('dur-sub-d');if(subd) subd.textContent=sub;
   const vm=document.getElementById('dur-val-m');
   if(vm) vm.textContent=val+'s';
+  const subm=document.getElementById('dur-sub-m');if(subm) subm.textContent=sub;
 }
 function getRaceDur(){
   return parseInt(document.getElementById('dur-slider-d')?.value||document.getElementById('dur-slider-m')?.value||60);
@@ -1241,7 +1748,10 @@ function getRaceDur(){
 // F-23 FIX: Duration preset helper
 function setDur(val){
   ['dur-slider-d','dur-slider-m'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=val;});
+  const mins=Math.floor(val/60),secs=val%60;
+  const sub=mins>=1?'('+(secs===0?mins+' min'+(mins>1?'s':''):mins+'m '+secs+'s')+')':'';
   ['dur-val-d','dur-val-m'].forEach(id=>setEl(id,val+'s'));
+  ['dur-sub-d','dur-sub-m'].forEach(id=>setEl(id,sub));
 }
 
 async function startRace(){
@@ -1399,10 +1909,16 @@ function resizeCanvas(){
 }
 
 function applyTransform(){
-  const tc=document.getElementById('track-container');
-  tc.style.transform=`translate(${_camX}px,${_camY}px) scale(${_camZ})`;
-  const lbl=document.getElementById('zoom-label');
-  if(lbl) lbl.textContent=Math.round(_camZ*100)+'%';
+  const vp = document.getElementById('track-viewport');
+  const tc = document.getElementById('track-container');
+  const vpW = vp.clientWidth, vpH = vp.clientHeight;
+  // Center-based zoom: translate so the center of viewport stays fixed
+  const cx = vpW/2, cy = vpH/2;
+  const tx = cx + (_camX - cx) * _camZ / (_camZ||1);
+  // Use a simpler direct transform with transform-origin:center center
+  tc.style.transform = `translate(${_camX}px,${_camY}px) scale(${_camZ})`;
+  const lbl = document.getElementById('zoom-label');
+  if(lbl) lbl.textContent = Math.round(_camZ*100)+'%';
 }
 
 function clampCam(){
@@ -1417,10 +1933,12 @@ function clampCam(){
 function zoomTrack(delta){
   const vp=document.getElementById('track-viewport');
   const W=vp.clientWidth, H=vp.clientHeight;
+  // Always zoom from viewport center
   const cx=W/2, cy=H/2;
-  const newZ=Math.max(0.6,Math.min(4,_camZ+delta));
-  _camX=cx-(cx-_camX)*(newZ/_camZ);
-  _camY=cy-(cy-_camY)*(newZ/_camZ);
+  const newZ=Math.max(0.4,Math.min(4,_camZ+delta));
+  // Adjust pan so center point stays fixed
+  _camX=cx+((_camX-cx)*(newZ/_camZ));
+  _camY=cy+((_camY-cy)*(newZ/_camZ));
   _camZ=newZ;
   clampCam();
   applyTransform();
@@ -1755,6 +2273,7 @@ function renderFrame(){
 
 function updateLB(){
   const sorted=[...RS.horses].sort((a,b)=>b.pos-a.pos);
+  const medals=['🥇','🥈','🥉'];
   setHTML('lb-list',sorted.map((h,r)=>`
     <div class="lb-row">
       <span class="lb-pos">${r+1}</span>
@@ -1762,6 +2281,17 @@ function updateLB(){
       <span class="lb-name" style="color:${h.color.h}">#${h.idx+1}</span>
       <span class="lb-pct">${Math.round(h.pos*100)}%</span>
     </div>`).join(''));
+
+  // Also update live rankings in Race Info right panel (top 3 only)
+  const top3 = sorted.slice(0,3);
+  setHTML('live-rank-list', top3.map((h,r)=>{
+    const player = S.room?.players?.find(p=>p.horse===h.idx);
+    return `<div class="live-rank-row">
+      <span class="live-rank-medal">${medals[r]||'#'+(r+1)}</span>
+      <span class="live-rank-horse" style="color:${h.color.h}">#${h.idx+1} ${h.color.n}${player?' <span style="font-size:9px;color:var(--muted);">('+escHtml(player.name)+')</span>':''}</span>
+      <span class="live-rank-pct">${Math.round(h.pos*100)}%</span>
+    </div>`;
+  }).join(''));
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2015,7 +2545,23 @@ document.addEventListener('DOMContentLoaded',()=>{
       }
     });
   }
+  // Render saved GCash numbers in lobby for quick reference
+  renderLobbyGcashNums();
 });
+
+function renderLobbyGcashNums(){
+  const div = document.getElementById('lobby-gcash-nums');
+  if(!div) return;
+  const list = gcashLoad();
+  if(!list.length){ div.innerHTML=''; return; }
+  div.innerHTML = `<div style="border-top:1px solid var(--border);margin-top:4px;padding-top:8px;">
+    <div style="font-size:10px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.6px;">💳 GCash Payment Numbers</div>
+    ${list.map(g=>`<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:11px;border-bottom:1px solid rgba(255,255,255,.04);">
+      <span style="font-family:'DM Mono';color:var(--blue);">${escHtml(g.number)}</span>
+      <span style="color:var(--muted);">${escHtml(g.name)}${g.isDefault?' <span style="color:var(--accent);">(default)</span>':''}</span>
+    </div>`).join('')}
+  </div>`;
+}
 
 window.addEventListener('load',()=>{
   const d=document.getElementById('mob-drawer');
@@ -2023,6 +2569,8 @@ window.addEventListener('load',()=>{
   d.style.transform='translateY(calc(100% - 46px))';
   buildHorseCountGrid();
   checkRGDisclaimer(); // F-24 FIX
+  // Auto-cleanup stale records before showing room list
+  autoCleanupOnStartup();
   // F-25 FIX: Attempt session reconnect on page load
   const sess=sessionStorage.getItem('gs_session');
   if(sess){
@@ -2032,11 +2580,11 @@ window.addEventListener('load',()=>{
         S.myId=myId; S.myName=myName; S.isHost=isHost;
         (async()=>{
           const reg=await regGet();
-          if(!reg) return refreshRooms();
+          if(!reg) { refreshRooms(); startLobbyAutoRefresh(); return; }
           const room=reg.rooms.find(r=>r.id===roomId);
-          if(!room||room.phase==='results'){sessionStorage.removeItem('gs_session');refreshRooms();return;}
+          if(!room||room.phase==='results'){sessionStorage.removeItem('gs_session'); refreshRooms(); startLobbyAutoRefresh(); return;}
           const me=room.players.find(p=>p.id===myId);
-          if(!me){sessionStorage.removeItem('gs_session');refreshRooms();return;}
+          if(!me){sessionStorage.removeItem('gs_session'); refreshRooms(); startLobbyAutoRefresh(); return;}
           S.room=room;
           enterApp();
           toast('↩ Reconnected to room '+roomId);
@@ -2045,7 +2593,8 @@ window.addEventListener('load',()=>{
       }
     }catch(e){}
   }
-  refreshRooms();  // auto-load room list on startup
+  refreshRooms();
+  startLobbyAutoRefresh();  // Start silent auto-refresh for room list
 });
 </script>
 </body>
