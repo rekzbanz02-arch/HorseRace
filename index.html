@@ -392,7 +392,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 const API_KEY  = '$2a$10$CvK4w8DTXZ1//5H1cpGQIerIT8Kzvk0FQHosdNm.XS0Q9n6sMmaf6';
 const BIN_ID   = '69a983c4ae596e708f62112e';
 const POLL_MS  = 2500;
-const RACE_DUR = 180;  // seconds — race target duration
+const RACE_DUR = 60;  // seconds — race target duration
 
 const HC = [
   {n:'Red',   h:'#ef4444'},{n:'Blue',  h:'#3b82f6'},{n:'Gold',  h:'#f5c842'},
@@ -977,20 +977,20 @@ function beginRace(){
 
   RS.horses=Array.from({length:n},(_,i)=>({
     idx:i, pos:0,
-    baseSpeed: BASE*(0.88+rng()*0.24),   // ±12% variation across horses
+    baseSpeed: BASE*(0.90+rng()*0.20),   // ±10% variation across horses, tuned for 60s
     speed:0, energy:1,
-    burst:0, burstT:rng()*1.5,
+    burst:0, burstT:rng()*3,
     legsPhase:rng()*Math.PI*2,
     wobble:0, finished:false, finishTime:null,
     player:room.players.find(p=>p.horse===i)||null,
     color:HC[i],
     surgeStrength:0.5+rng()*0.8,
-    // Pre-baked deterministic burst schedule
-    burstSchedule:Array.from({length:40},()=>({
+    // Pre-baked deterministic burst schedule — 80 entries for ~60s race
+    burstSchedule:Array.from({length:80},()=>({
       val: rng()<0.4 ? BASE*(0.25+rng()*0.65)
          : rng()<0.35 ? -BASE*(rng()*0.2)
          : 0,
-      gap: 0.4+rng()*2.5
+      gap: 0.8+rng()*2.0
     })),
     burstIdx:0,
   }));
@@ -999,7 +999,7 @@ function beginRace(){
   RS.raceStartTs=performance.now();
   document.getElementById('race-lb').style.display='block';
 
-  // Start the visual 30s clock using the server timestamp if available
+  // Start the visual 60s clock using the server timestamp if available
   const serverStart=S.room?.raceStartAt||Date.now();
   startClock(serverStart);
 
@@ -1046,7 +1046,7 @@ function tickHorses(dt,ts){
     const photo=p>0.83?(leader.pos-p)*0.018*h.surgeStrength:0;
 
     // Late-race urgency: if race is running long, nudge everyone forward
-    const urgency=elapsed>RACE_DUR*0.85?(elapsed/RACE_DUR-0.85)*0.15:0;
+    const urgency=elapsed>RACE_DUR*0.85?(elapsed/RACE_DUR-0.85)*0.08:0;
 
     let spd=h.baseSpeed*h.energy+h.burst+cu+photo+urgency;
     spd=Math.max(0.0005,Math.min(spd,0.10));
@@ -1061,7 +1061,7 @@ function tickHorses(dt,ts){
 
   const allDone=RS.finishOrder.length===hs.length;
   const first=hs.find(h=>h.finished);
-  const timeout=elapsed>=RACE_DUR+4;  // 4s grace after 30s
+  const timeout=elapsed>=RACE_DUR+4;  // 4s grace after 60s
 
   if(allDone||timeout||(first&&performance.now()-first.finishTime>8000)){
     hs.forEach(h=>{if(!h.finished){h.finished=true;RS.finishOrder.push(h.idx);}});
