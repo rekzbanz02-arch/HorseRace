@@ -156,6 +156,12 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .hi:focus{border-color:var(--accent);}
 .hlabel{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-top:7px;display:block;}
 
+/* ── DURATION SLIDER ── */
+.dur-slider-wrap{margin-top:7px;}
+.dur-slider-wrap input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer;height:4px;}
+.dur-label{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:3px;}
+.dur-val{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--accent);text-align:center;line-height:1;margin-bottom:2px;}
+
 /* ── RESULTS ── */
 .rrow{display:flex;align-items:center;gap:7px;padding:6px;border-radius:6px;margin-bottom:4px;}
 .rrow.rwin{background:rgba(61,220,132,.1);border:1px solid rgba(61,220,132,.3);}
@@ -290,6 +296,12 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
         <input class="hi" id="gc-phone-h" placeholder="09XX-XXX-XXXX" maxlength="15" inputmode="numeric"/>
         <span class="hlabel">Account Name</span>
         <input class="hi" id="gc-acct-h" placeholder="Juan Dela Cruz"/>
+        <span class="hlabel">Race Duration</span>
+        <div class="dur-slider-wrap">
+          <div class="dur-val" id="dur-val-d">60s</div>
+          <input type="range" id="dur-slider-d" min="1" max="600" value="60" oninput="syncDurSlider('d')"/>
+          <div class="dur-label"><span>1s</span><span>600s</span></div>
+        </div>
         <div style="margin-top:9px;"></div>
         <button class="btn bg bfull" onclick="startRace()">🏁 Start Race</button>
         <button class="btn bs bfull" onclick="resetGame()">🔄 New Race</button>
@@ -326,6 +338,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
         <div style="font-size:11px;color:var(--muted);line-height:2;">
           <div>Phase: <span id="ri-phase" style="color:var(--text);">Lobby</span></div>
           <div>Horses: <span id="ri-horses" style="color:var(--accent);">—</span></div>
+          <div>Duration: <span id="ri-dur" style="color:var(--orange);font-family:'DM Mono',monospace;">60s</span></div>
           <div>Pot: <span id="ri-pot" style="color:var(--green);font-family:'DM Mono',monospace;">₱0</span></div>
         </div>
       </div>
@@ -363,6 +376,12 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
       <input class="hi" id="gc-phone-m" placeholder="09XX-XXX-XXXX" maxlength="15" inputmode="numeric"/>
       <span class="hlabel">Account Name</span>
       <input class="hi" id="gc-acct-m" placeholder="Juan Dela Cruz"/>
+      <span class="hlabel">Race Duration</span>
+      <div class="dur-slider-wrap">
+        <div class="dur-val" id="dur-val-m">60s</div>
+        <input type="range" id="dur-slider-m" min="1" max="600" value="60" oninput="syncDurSlider('m')"/>
+        <div class="dur-label"><span>1s</span><span>600s</span></div>
+      </div>
       <div style="margin-top:9px;"></div>
       <button class="btn bg bfull" onclick="startRace()">🏁 Start Race</button>
       <button class="btn bs bfull" onclick="resetGame()">🔄 New Race</button>
@@ -392,7 +411,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 const API_KEY  = '$2a$10$CvK4w8DTXZ1//5H1cpGQIerIT8Kzvk0FQHosdNm.XS0Q9n6sMmaf6';
 const BIN_ID   = '69a983c4ae596e708f62112e';
 const POLL_MS  = 2500;
-const RACE_DUR = 180;  // seconds — race target duration
+let   RACE_DUR = 60;  // seconds — set by host slider, synced via room data
 
 const HC = [
   {n:'Red',   h:'#ef4444'},{n:'Blue',  h:'#3b82f6'},{n:'Gold',  h:'#f5c842'},
@@ -603,6 +622,8 @@ function renderAll(){
   ['ri-phase','ri-ph-m'].forEach(id=>setEl(id,room.phase));
   ['ri-horses','ri-h-m'].forEach(id=>setEl(id,numH));
   ['ri-pot','ri-p-m'].forEach(id=>setEl(id,'₱'+pot.toLocaleString()));
+  const dur=room.raceDur||60;
+  setEl('ri-dur', dur+'s');
 
   const pl=mkPlayers(room);
   setHTML('pl-desktop',pl||'<div class="empty">No players yet</div>');
@@ -791,12 +812,26 @@ function getHostInfo(){
     acct:  document.getElementById('gc-acct-h').value.trim() ||document.getElementById('gc-acct-m').value.trim()
   };
 }
+function syncDurSlider(side){
+  const val=parseInt(document.getElementById('dur-slider-'+side).value);
+  const other=side==='d'?'m':'d';
+  const otherEl=document.getElementById('dur-slider-'+other);
+  if(otherEl) otherEl.value=val;
+  document.getElementById('dur-val-d').textContent=val+'s';
+  const vm=document.getElementById('dur-val-m');
+  if(vm) vm.textContent=val+'s';
+}
+function getRaceDur(){
+  return parseInt(document.getElementById('dur-slider-d')?.value||document.getElementById('dur-slider-m')?.value||60);
+}
+
 async function startRace(){
   const reg=await regGet(); if(!reg) return;
   const room=myRoom(reg); if(!room) return;
   if(room.players.length<2){toast('Need at least 2 players!');return;}
   const {phone,acct}=getHostInfo();
   room.gcashPhone=phone; room.gcashAcctName=acct;
+  room.raceDur=getRaceDur();  // host-chosen duration, synced to all clients
   room.raceSeed=Math.floor(Math.random()*2**32);  // seeded → same race everywhere
   room.phase='countdown';
   const i=reg.rooms.findIndex(r=>r.id===room.id); reg.rooms[i]=room;
@@ -971,8 +1006,10 @@ function beginRace(){
   const rng=mkRng(seed);
   const n=room.horseCount||Math.max(2,room.players.length);
 
+  // Sync RACE_DUR from room data (host sets it, all clients read it)
+  RACE_DUR = room.raceDur || 60;
+
   // Target: average horse crosses finish (pos=1) in ~RACE_DUR seconds
-  // Each tick: pos += speed * dt.  Average speed needed ≈ 1/30 = 0.0333/s
   const BASE = 1 / RACE_DUR;
 
   RS.horses=Array.from({length:n},(_,i)=>({
@@ -1049,8 +1086,8 @@ function tickHorses(dt,ts){
     const urgency=elapsed>RACE_DUR*0.85?(elapsed/RACE_DUR-0.85)*0.15:0;
 
     let spd=h.baseSpeed*h.energy+h.burst+cu+photo+urgency;
-    spd=Math.max(0.0005,Math.min(spd,0.10));
-    h.speed=spd; h.pos+=spd;
+    spd=Math.max(BASE*0.3, Math.min(spd, BASE*3.5));
+    h.speed=spd; h.pos+=spd*dt;
 
     if(h.pos>=1&&!h.finished){
       h.finished=true; h.pos=1;
@@ -1061,7 +1098,7 @@ function tickHorses(dt,ts){
 
   const allDone=RS.finishOrder.length===hs.length;
   const first=hs.find(h=>h.finished);
-  const timeout=elapsed>=RACE_DUR+4;  // 4s grace after 30s
+  const timeout=elapsed>=RACE_DUR+4;  // 4s grace after race ends
 
   if(allDone||timeout||(first&&performance.now()-first.finishTime>8000)){
     hs.forEach(h=>{if(!h.finished){h.finished=true;RS.finishOrder.push(h.idx);}});
