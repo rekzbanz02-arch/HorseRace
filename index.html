@@ -18,9 +18,9 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 
 /* ── APP LAYOUT ── */
 #app{display:flex;flex-direction:column;height:100vh;}
-#main{display:flex;flex:1;overflow:hidden;min-height:0;}
-#sidebar{width:275px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;}
-#rightpanel{width:235px;flex-shrink:0;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;}
+#main{display:flex;flex:1;overflow:hidden;min-height:0;position:relative;}
+#sidebar{width:275px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;position:relative;}
+#rightpanel{width:235px;flex-shrink:0;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;position:relative;}
 #trackarea{flex:1;display:flex;flex-direction:column;min-width:0;}
 
 /* ── TOPBAR ── */
@@ -191,11 +191,10 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 ::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 
 /* ── PANEL SLIDE TOGGLE ── */
-#sidebar{transition:transform .28s cubic-bezier(.4,0,.2,1);}
-#rightpanel{transition:transform .28s cubic-bezier(.4,0,.2,1);}
+#sidebar{transition:transform .28s cubic-bezier(.4,0,.2,1) !important;}
+#rightpanel{transition:transform .28s cubic-bezier(.4,0,.2,1) !important;}
 #sidebar.collapsed{transform:translateX(-100%);position:absolute;top:0;bottom:0;left:0;z-index:10;}
 #rightpanel.collapsed{transform:translateX(100%);position:absolute;top:0;bottom:0;right:0;z-index:10;}
-#main{position:relative;}
 .panel-tab{position:absolute;top:50%;width:18px;height:52px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:10px;color:var(--muted);transition:.15s;z-index:12;user-select:none;transform:translateY(-50%);}
 .panel-tab:hover{background:var(--surface);color:var(--accent);border-color:var(--accent);}
 #tab-left{right:-18px;border-radius:0 5px 5px 0;border-left:none;}
@@ -451,6 +450,7 @@ const API_KEY  = '$2a$10$CvK4w8DTXZ1//5H1cpGQIerIT8Kzvk0FQHosdNm.XS0Q9n6sMmaf6';
 const BIN_ID   = '69a983c4ae596e708f62112e';
 const POLL_MS  = 2500;
 let   RACE_DUR = 60;  // seconds — set by host slider, synced via room data
+let   BASE     = 1/60; // module-level so tickHorses can access it
 
 const HC = [
   {n:'Red',   h:'#ef4444'},{n:'Blue',  h:'#3b82f6'},{n:'Gold',  h:'#f5c842'},
@@ -1053,7 +1053,7 @@ function beginRace(){
   RACE_DUR = room.raceDur || 60;
 
   // Target: average horse crosses finish (pos=1) in ~RACE_DUR seconds
-  const BASE = 1 / RACE_DUR;
+  BASE = 1 / RACE_DUR;
 
   RS.horses=Array.from({length:n},(_,i)=>({
     idx:i, pos:0,
