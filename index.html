@@ -24,91 +24,175 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 #trackarea{flex:1;display:flex;flex-direction:column;min-width:0;}
 
 /* ── TOPBAR ── */
-#topbar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;gap:8px;flex-wrap:wrap;}
+#topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:6px 14px;height:44px;
+  background:linear-gradient(180deg,#0d1016 0%,var(--surface) 100%);
+  border-bottom:1px solid var(--border);flex-shrink:0;gap:8px;
+}
 .tl{display:flex;align-items:center;gap:8px;}
-.tl h1{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;color:var(--accent);}
-.chips{display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
-.chip{background:var(--surface2);border:1px solid var(--border);padding:3px 8px;border-radius:4px;font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);white-space:nowrap;}
-.chip.live{color:var(--red);border-color:var(--red);animation:pulse 1.5s infinite;}
-.chip.timer{color:var(--orange);border-color:var(--orange);font-weight:700;}
+.tl h1{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--accent);}
+.chips{display:flex;gap:5px;align-items:center;flex-wrap:wrap;flex:1;}
+.chip{background:var(--surface2);border:1px solid var(--border);padding:2px 7px;border-radius:3px;font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);white-space:nowrap;}
+.chip.live{color:var(--red);border-color:rgba(255,82,82,.4);animation:pulse 1.5s infinite;}
+.chip.timer{color:var(--orange);border-color:rgba(249,115,22,.4);font-weight:700;}
 .sync-badge{display:flex;align-items:center;gap:4px;font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);}
 #sdot{width:7px;height:7px;border-radius:50%;background:var(--muted);transition:.3s;flex-shrink:0;}
 #sdot.on{background:var(--accent);animation:pulse 1s infinite;}
 #sdot.err{background:var(--red);}
+/* icon-style topbar buttons */
+.tb-icon-btn{
+  width:30px;height:30px;border-radius:5px;flex-shrink:0;
+  background:transparent;border:1px solid transparent;
+  color:var(--muted);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:.15s;padding:0;
+}
+.tb-icon-btn:hover{background:var(--surface2);border-color:var(--border);color:var(--text);}
+.tb-icon-btn.tb-active{border-color:rgba(245,200,66,.4);color:var(--accent);background:rgba(245,200,66,.07);}
+.tb-icon-btn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
 
-/* ── TRACK ZOOM/PAN (mobile) ── */
-#track-viewport{flex:1;position:relative;overflow:hidden;background:#12231a;min-height:0;touch-action:none;}
+/* ── TRACK ZOOM/PAN ── */
+#track-viewport{
+  flex:1;position:relative;overflow:hidden;
+  background:#0c1a10;min-height:0;touch-action:none;
+}
+/* Soft vignette to add depth */
+#track-viewport::after{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:2;
+  background:radial-gradient(ellipse at 50% 50%, transparent 52%, rgba(4,6,4,.6) 100%);
+}
 #track-container{
-  position:absolute;
-  top:0;left:0;
-  width:100%;height:100%;
-  transform-origin:0 0;
-  will-change:transform;
-  cursor:grab;
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  transform-origin:0 0;will-change:transform;cursor:grab;
 }
 #track-container.panning{cursor:grabbing;}
 #track-canvas{display:block;width:100%;height:100%;}
-/* Zoom controls */
-#zoom-controls{
-  position:absolute;bottom:48px;right:10px;
-  display:none;flex-direction:column;gap:6px;z-index:20;
+
+/* ── HUD CLUSTER (zoom + fullscreen) ── */
+#track-hud{
+  position:absolute;bottom:10px;right:10px;
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  z-index:25;
 }
-#zoom-controls button{
-  width:38px;height:38px;border-radius:50%;
-  background:rgba(17,20,24,.88);border:1px solid var(--border);
-  color:var(--text);font-size:18px;cursor:pointer;
+.hud-btn{
+  width:36px;height:36px;border-radius:8px;
+  background:rgba(10,13,10,.82);
+  border:1px solid rgba(255,255,255,.1);
+  color:rgba(255,255,255,.75);
+  cursor:pointer;
   display:flex;align-items:center;justify-content:center;
-  transition:.12s;-webkit-tap-highlight-color:transparent;
+  transition:all .15s;
+  -webkit-tap-highlight-color:transparent;
+  backdrop-filter:blur(6px);
+  box-shadow:0 2px 10px rgba(0,0,0,.45);
 }
-#zoom-controls button:hover{border-color:var(--accent);color:var(--accent);}
+.hud-btn:hover{border-color:rgba(245,200,66,.5);color:var(--accent);}
+.hud-btn:active{transform:scale(.92);}
+.hud-btn.hud-active{border-color:rgba(245,200,66,.6);color:var(--accent);background:rgba(245,200,66,.1);}
+.hud-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;}
+.hud-sep{width:24px;height:1px;background:rgba(255,255,255,.1);}
+/* Only show zoom buttons on mobile; fullscreen always visible */
+#hud-zoom-group{display:none;}
+@media(max-width:680px){#hud-zoom-group{display:contents;}}
+
 #zoom-label{
-  position:absolute;bottom:48px;left:10px;
-  background:rgba(10,12,15,.8);border:1px solid var(--border);
-  border-radius:5px;padding:3px 7px;
+  position:absolute;bottom:10px;left:10px;
+  background:rgba(10,13,10,.8);border:1px solid rgba(255,255,255,.1);
+  border-radius:5px;padding:3px 8px;
   font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);
-  display:none;z-index:20;pointer-events:none;
+  z-index:25;pointer-events:none;
+  display:none;backdrop-filter:blur(4px);
 }
-/* Landscape nudge banner */
+@media(max-width:680px){#zoom-label{display:block;}}
+
+/* ── LANDSCAPE NUDGE ── */
 #landscape-hint{
-  display:none;
-  position:absolute;inset:0;
-  background:rgba(10,12,15,.92);
+  display:none;position:absolute;inset:0;
+  background:rgba(4,6,4,.92);backdrop-filter:blur(4px);
   flex-direction:column;align-items:center;justify-content:center;
-  gap:10px;z-index:50;pointer-events:none;
+  gap:12px;z-index:50;pointer-events:none;
 }
-#landscape-hint .lh-icon{font-size:42px;animation:pulse 1.5s infinite;}
-#landscape-hint p{font-size:13px;color:var(--muted);text-align:center;padding:0 24px;}
-@media(max-width:680px){
-  #zoom-controls{display:flex;}
-  #zoom-label{display:block;}
-}
+#landscape-hint .lh-icon{font-size:46px;animation:pulse 1.5s infinite;}
+#landscape-hint p{font-size:13px;color:var(--muted);text-align:center;padding:0 28px;line-height:1.6;}
 @media(orientation:portrait) and (max-width:680px){
-  /* Show landscape hint only during active race */
   body.racing-active #landscape-hint{display:flex;}
 }
 
 /* ── RACE TIMER BAR ── */
-#timebar-wrap{position:absolute;top:0;left:0;right:0;height:5px;z-index:8;pointer-events:none;}
-#timebar{height:5px;width:100%;background:var(--green);transition:background .4s;transform-origin:left;}
+#timebar-wrap{position:absolute;top:0;left:0;right:0;height:4px;z-index:8;pointer-events:none;background:rgba(255,255,255,.04);}
+#timebar{height:4px;width:100%;background:var(--green);transition:background .5s;transform-origin:left;border-radius:0 2px 2px 0;}
 
-/* ── OVERLAYS (sit on viewport, not zoomable container) ── */
-#countdown-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.65);z-index:10;pointer-events:none;}
-#countdown-num{font-family:'Bebas Neue',sans-serif;font-size:clamp(80px,20vw,160px);color:var(--accent);text-shadow:0 0 60px rgba(245,200,66,.5);}
-#winner-banner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.82);z-index:11;}
-#winner-banner h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,8vw,68px);color:var(--accent);animation:bannerIn .4s ease;text-align:center;padding:0 16px;}
-.wb-sub{font-size:clamp(13px,3vw,18px);color:var(--text);margin-top:8px;text-align:center;padding:0 12px;}
-.wb-pay{font-family:'Bebas Neue',sans-serif;font-size:clamp(16px,4vw,30px);color:var(--green);margin-top:10px;}
+/* ── COUNTDOWN ── */
+#countdown-overlay{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.6);backdrop-filter:blur(3px);z-index:10;pointer-events:none;
+}
+#countdown-num{
+  font-family:'Bebas Neue',sans-serif;font-size:clamp(90px,22vw,170px);
+  color:var(--accent);
+  text-shadow:0 0 80px rgba(245,200,66,.7), 0 4px 0 rgba(0,0,0,.5);
+}
+
+/* ── WINNER BANNER ── */
+@keyframes bannerDrop{0%{transform:translateY(-30px) scale(.94);opacity:0}60%{transform:translateY(4px) scale(1.01)}100%{transform:translateY(0) scale(1);opacity:1}}
+@keyframes goldPulse{0%,100%{text-shadow:0 0 20px rgba(245,200,66,.5)}50%{text-shadow:0 0 55px rgba(245,200,66,.9),0 0 80px rgba(245,200,66,.4)}}
+#winner-banner{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  background:linear-gradient(180deg,rgba(0,0,0,.88) 0%,rgba(6,10,6,.94) 100%);
+  backdrop-filter:blur(6px);z-index:11;
+}
+#winner-banner::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 35%, rgba(245,200,66,.1) 0%, transparent 65%);
+}
+.wb-trophy{font-size:clamp(36px,8vw,64px);animation:bannerDrop .5s cubic-bezier(.22,1,.36,1) both;}
+#winner-banner h2{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(34px,8vw,72px);
+  color:var(--accent);letter-spacing:4px;text-align:center;padding:0 16px;
+  animation:bannerDrop .45s .08s cubic-bezier(.22,1,.36,1) both, goldPulse 2.2s 1s infinite;
+}
+.wb-rule{width:100px;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);margin:10px auto 0;opacity:.7;}
+.wb-sub{font-size:clamp(13px,3vw,19px);color:var(--text);margin-top:12px;text-align:center;padding:0 16px;font-weight:500;}
+.wb-pay{font-family:'Bebas Neue',sans-serif;font-size:clamp(18px,4.5vw,34px);color:var(--green);margin-top:8px;letter-spacing:2px;}
 
 /* ── LIVE LEADERBOARD ── */
-#race-lb{position:absolute;top:12px;right:8px;background:rgba(10,12,15,.88);border:1px solid var(--border);border-radius:8px;padding:8px 10px;z-index:22;min-width:96px;display:none;}
-#race-lb h4{font-family:'Bebas Neue',sans-serif;font-size:11px;color:var(--accent);margin-bottom:4px;letter-spacing:1px;}
-.lb-row{display:flex;align-items:center;gap:5px;font-size:10px;padding:2px 0;}
-.lb-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+#race-lb{
+  position:absolute;top:14px;right:10px;
+  background:rgba(8,11,8,.86);
+  border:1px solid rgba(245,200,66,.18);
+  border-radius:8px;padding:8px 10px;z-index:22;min-width:100px;display:none;
+  backdrop-filter:blur(8px);
+  box-shadow:0 4px 20px rgba(0,0,0,.45);
+}
+#race-lb h4{
+  font-family:'Bebas Neue',sans-serif;font-size:10px;color:var(--accent);
+  margin-bottom:5px;letter-spacing:1.5px;
+  border-bottom:1px solid rgba(245,200,66,.12);padding-bottom:4px;
+}
+.lb-row{display:flex;align-items:center;gap:5px;padding:2px 0;}
+.lb-pos{font-family:'Bebas Neue',sans-serif;font-size:9px;width:10px;color:var(--muted);flex-shrink:0;}
+.lb-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.lb-name{font-size:9px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.lb-pct{font-size:8px;color:var(--muted);font-family:'DM Mono',monospace;}
 
 /* ── STATUS BAR ── */
-#status-bar{background:var(--surface);border-top:1px solid var(--border);padding:6px 14px;display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--muted);flex-shrink:0;}
-#status-msg{font-family:'DM Mono',monospace;flex:1;}
-#race-clock{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--green);letter-spacing:1px;min-width:44px;text-align:right;}
+#status-bar{
+  background:var(--surface);border-top:1px solid var(--border);
+  padding:5px 14px;display:flex;align-items:center;
+  justify-content:space-between;font-size:10.5px;color:var(--muted);flex-shrink:0;
+}
+#status-msg{font-family:'DM Mono',monospace;flex:1;letter-spacing:.2px;}
+#race-clock{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--green);letter-spacing:1.5px;min-width:48px;text-align:right;line-height:1;}
+
+/* ── FULLSCREEN MODE ── */
+#track-viewport:fullscreen{background:#0c1a10;}
+#track-viewport:-webkit-full-screen{background:#0c1a10;}
+body.in-fullscreen #status-bar,
+body.in-fullscreen #topbar{display:none;}
+body.in-fullscreen #trackarea{height:100vh;}
 
 /* ── PANEL SECTIONS ── */
 .ps{padding:11px 13px;border-bottom:1px solid var(--border);}
@@ -250,15 +334,15 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
   transition:.15s;z-index:12;user-select:none;transform:translateY(-50%);
   writing-mode:vertical-rl;
 }
-.panel-tab:hover{background:var(--surface);color:var(--accent);border-color:var(--accent);}
+.panel-tab:hover{background:var(--surface);color:var(--accent);border-color:rgba(245,200,66,.35);}
 #tab-left{right:-22px;border-radius:0 6px 6px 0;border-left:none;}
 #tab-right{left:-22px;border-radius:6px 0 0 6px;border-right:none;}
 /* Full-track mode — both panels hidden */
 body.fulltrack #sidebar,body.fulltrack #rightpanel{transform:translateX(-100%);position:absolute;top:0;bottom:0;left:0;z-index:10;display:flex;}
 body.fulltrack #rightpanel{transform:translateX(100%);left:auto;right:0;}
-#fulltrack-btn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:4px 9px;border-radius:4px;font-size:11px;cursor:pointer;font-family:'DM Mono',monospace;transition:.12s;white-space:nowrap;}
-#fulltrack-btn:hover{border-color:var(--accent);color:var(--accent);}
-body.fulltrack #fulltrack-btn{border-color:var(--accent);color:var(--accent);}
+#fulltrack-btn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:3px 8px;border-radius:4px;font-size:11px;cursor:pointer;font-family:'DM Mono',monospace;transition:.12s;white-space:nowrap;}
+#fulltrack-btn:hover{border-color:rgba(245,200,66,.4);color:var(--accent);}
+body.fulltrack #fulltrack-btn{border-color:rgba(245,200,66,.4);color:var(--accent);}
 
 @media(max-width:960px){
   #sidebar{width:220px;}
@@ -336,7 +420,7 @@ body.fulltrack #fulltrack-btn{border-color:var(--accent);color:var(--accent);}
 <!-- ═══════════════════════ APP ═══════════════════════ -->
 <div id="app">
   <div id="topbar">
-    <div class="tl"><span style="font-size:22px;">🏇</span><h1>GrandStake</h1></div>
+    <div class="tl"><span style="font-size:20px;">🏇</span><h1>GrandStake</h1></div>
     <div class="chips">
       <span class="chip" id="c-room">ROOM: —</span>
       <span class="chip" id="c-phase">LOBBY</span>
@@ -344,10 +428,20 @@ body.fulltrack #fulltrack-btn{border-color:var(--accent);color:var(--accent);}
       <span class="chip live" id="c-live" style="display:none;">● LIVE</span>
       <span class="chip timer" id="c-countdown" style="display:none;"></span>
     </div>
-    <div class="sync-badge"><span id="sdot"></span><span id="slabel">idle</span></div>
-    <!-- F-24 FIX: Session total bet display -->
-    <span id="session-total-bet" style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;white-space:nowrap;"></span>
-    <button id="fulltrack-btn" onclick="toggleFullTrack()" title="Expand/collapse track view">⛶ Full Track</button>
+    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+      <div class="sync-badge"><span id="sdot"></span><span id="slabel">idle</span></div>
+      <span id="session-total-bet" style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;white-space:nowrap;"></span>
+      <!-- Full Track toggle -->
+      <button id="fulltrack-btn" class="tb-icon-btn" onclick="toggleFullTrack()" title="Toggle full track view">
+        <svg id="ft-icon-expand" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        <svg id="ft-icon-collapse" viewBox="0 0 24 24" style="display:none;"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+      </button>
+      <!-- Fullscreen button -->
+      <button id="fs-btn" class="tb-icon-btn" onclick="toggleFullscreen()" title="Enter fullscreen (F)">
+        <svg id="fs-icon-enter" viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+        <svg id="fs-icon-exit" viewBox="0 0 24 24" style="display:none;"><path d="M8 3v5H3M21 8h-5V3M3 16h5v5M16 21v-5h5"/></svg>
+      </button>
+    </div>
   </div>
 
   <div id="main">
@@ -408,13 +502,15 @@ body.fulltrack #fulltrack-btn{border-color:var(--accent);color:var(--accent);}
         </div>
         <!-- Overlays sit on viewport so they don't zoom -->
         <div id="timebar-wrap"><div id="timebar"></div></div>
-        <div id="race-lb"><h4>📍 POSITIONS</h4><div id="lb-list"></div></div>
+        <div id="race-lb"><h4>POSITIONS</h4><div id="lb-list"></div></div>
         <div id="countdown-overlay" style="display:none;"><div id="countdown-num"></div></div>
         <div id="winner-banner" style="display:none;">
-          <h2 id="wb-h">🏆 WINS!</h2>
+          <div class="wb-trophy">🏆</div>
+          <h2 id="wb-h">WINS!</h2>
+          <div class="wb-rule"></div>
           <div class="wb-sub" id="wb-p"></div>
           <div class="wb-pay" id="wb-pay"></div>
-          <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center;padding:0 12px;">
+          <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center;padding:0 12px;">
             <button class="btn bs" onclick="hideWinner()">📊 See Results</button>
           </div>
         </div>
@@ -423,11 +519,25 @@ body.fulltrack #fulltrack-btn{border-color:var(--accent);color:var(--accent);}
           <div class="lh-icon">📱↔️</div>
           <p>Rotate to landscape for the best race view</p>
         </div>
-        <!-- Zoom controls (mobile) -->
-        <div id="zoom-controls">
-          <button onclick="zoomTrack(0.25)" title="Zoom in">+</button>
-          <button onclick="zoomTrack(-0.25)" title="Zoom out">−</button>
-          <button onclick="resetZoom()" title="Reset view" style="font-size:13px;">⟳</button>
+        <!-- HUD: zoom + fullscreen cluster -->
+        <div id="track-hud">
+          <div id="hud-zoom-group" style="display:contents;">
+            <button class="hud-btn" onclick="zoomTrack(0.25)" title="Zoom in">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35M11 8v6M8 11h6"/></svg>
+            </button>
+            <button class="hud-btn" onclick="zoomTrack(-0.25)" title="Zoom out">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35M8 11h6"/></svg>
+            </button>
+            <button class="hud-btn" onclick="resetZoom()" title="Reset zoom">
+              <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            </button>
+            <div class="hud-sep"></div>
+          </div>
+          <!-- Fullscreen button always in HUD (visible on all screens) -->
+          <button class="hud-btn" id="hud-fs-btn" onclick="toggleFullscreen()" title="Fullscreen (F)">
+            <svg id="hud-fs-enter" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+            <svg id="hud-fs-exit" viewBox="0 0 24 24" style="display:none;"><path d="M8 3v5H3M21 8h-5V3M3 16h5v5M16 21v-5h5"/></svg>
+          </button>
         </div>
         <div id="zoom-label">100%</div>
       </div>
@@ -533,7 +643,13 @@ function toggleRight(){
 function toggleFullTrack(){
   fullTrack=!fullTrack;
   document.body.classList.toggle('fulltrack',fullTrack);
-  document.getElementById('fulltrack-btn').textContent=fullTrack?'⛶ Show Panels':'⛶ Full Track';
+  // Swap expand/collapse icons
+  const expand=document.getElementById('ft-icon-expand');
+  const collapse=document.getElementById('ft-icon-collapse');
+  if(expand) expand.style.display=fullTrack?'none':'';
+  if(collapse) collapse.style.display=fullTrack?'':'none';
+  const btn=document.getElementById('fulltrack-btn');
+  if(btn) btn.classList.toggle('tb-active',fullTrack);
   if(fullTrack){leftCollapsed=true;rightCollapsed=true;}
   else{leftCollapsed=false;rightCollapsed=false;
     document.getElementById('sidebar').classList.remove('collapsed');
@@ -544,7 +660,47 @@ function toggleFullTrack(){
   setTimeout(()=>{if(canvas)resizeCanvas();if(!RS.running)drawIdle();},300);
 }
 
-// XSS helper
+// ═══════════════════════════════════════════════════════
+// FULLSCREEN
+// ═══════════════════════════════════════════════════════
+let _isFullscreen=false;
+function toggleFullscreen(){
+  const vp=document.getElementById('track-viewport');
+  if(!_isFullscreen){
+    const req=vp.requestFullscreen||vp.webkitRequestFullscreen||vp.mozRequestFullScreen||vp.msRequestFullscreen;
+    if(req) req.call(vp).catch(()=>{});
+  } else {
+    const ex=document.exitFullscreen||document.webkitExitFullscreen||document.mozCancelFullScreen||document.msExitFullscreen;
+    if(ex) ex.call(document);
+  }
+}
+function _syncFSIcons(on){
+  _isFullscreen=on;
+  // topbar icons
+  const te=document.getElementById('fs-icon-enter'), tx=document.getElementById('fs-icon-exit');
+  if(te) te.style.display=on?'none':'';
+  if(tx) tx.style.display=on?'':'none';
+  // HUD icons
+  const he=document.getElementById('hud-fs-enter'), hx=document.getElementById('hud-fs-exit');
+  if(he) he.style.display=on?'none':'';
+  if(hx) hx.style.display=on?'':'none';
+  // HUD button active state
+  const hb=document.getElementById('hud-fs-btn');
+  if(hb) hb.classList.toggle('hud-active',on);
+  const fb=document.getElementById('fs-btn');
+  if(fb) fb.classList.toggle('tb-active',on);
+  // resize canvas after transition
+  setTimeout(()=>{if(canvas)resizeCanvas();resetZoom();if(!RS.running)drawIdle();},120);
+}
+document.addEventListener('fullscreenchange',()=>_syncFSIcons(!!document.fullscreenElement));
+document.addEventListener('webkitfullscreenchange',()=>_syncFSIcons(!!document.webkitFullscreenElement));
+// Keyboard shortcut: F = fullscreen
+document.addEventListener('keydown',e=>{
+  if(e.key==='f'||e.key==='F'){
+    if(document.activeElement.tagName==='INPUT'||document.activeElement.tagName==='TEXTAREA') return;
+    toggleFullscreen();
+  }
+});
 function escHtml(s){
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
@@ -789,9 +945,11 @@ function showWinnerBanner(room){
     toast('⚠️ Result mismatch — local race differs from server result. Contact host.');
   }
   wb.style.display='flex';
-  document.getElementById('wb-h').textContent='🏆 #'+(w.horseIdx+1)+' '+wc.n+' WINS!';
+  const wh=document.getElementById('wb-h');
+  wh.textContent='#'+(w.horseIdx+1)+' '+wc.n+' WINS!';
+  wh.style.color=wc.h;
   document.getElementById('wb-p').textContent=wp?wp.name+' takes the pot!':'Horse #'+(w.horseIdx+1)+' wins!';
-  document.getElementById('wb-pay').textContent=tot?'💰 Pot: ₱'+Math.round(tot*.9).toLocaleString():'';
+  document.getElementById('wb-pay').textContent=tot?'₱'+Math.round(tot*.9).toLocaleString()+' PAYOUT':'';
   spawnConfetti();
 }
 
@@ -1374,26 +1532,71 @@ function trackMetrics(W,H,n){
 function drawTrack(W,H,n){
   const m=trackMetrics(W,H,n);
   const {tw,th,lh,sx,ex,tx,ty}=m;
-  ctx.fillStyle='#12231a'; ctx.fillRect(0,0,W,H);
-  const g=ctx.createLinearGradient(0,ty,0,ty+th);
-  g.addColorStop(0,'#281608'); g.addColorStop(.5,'#3d2b1a'); g.addColorStop(1,'#281608');
-  ctx.fillStyle=g; ctx.fillRect(tx,ty,tw,th);
+
+  // ── Background ──
+  ctx.fillStyle='#0c1a10'; ctx.fillRect(0,0,W,H);
+
+  // ── Grass shoulders (top & bottom of track area) ──
+  const grassH=Math.min(ty-2, 22);
+  if(grassH>0){
+    const gg=ctx.createLinearGradient(0,ty-grassH,0,ty);
+    gg.addColorStop(0,'#0a1a0b'); gg.addColorStop(1,'#122b14');
+    ctx.fillStyle=gg; ctx.fillRect(tx,ty-grassH,tw,grassH);
+    const gg2=ctx.createLinearGradient(0,ty+th,0,ty+th+grassH);
+    gg2.addColorStop(0,'#122b14'); gg2.addColorStop(1,'#0a1a0b');
+    ctx.fillStyle=gg2; ctx.fillRect(tx,ty+th,tw,grassH);
+  }
+
+  // ── Dirt base ──
+  const dg=ctx.createLinearGradient(0,ty,0,ty+th);
+  dg.addColorStop(0,'#2a1806'); dg.addColorStop(.5,'#3c2510'); dg.addColorStop(1,'#2a1806');
+  ctx.fillStyle=dg; ctx.fillRect(tx,ty,tw,th);
+
+  // ── Subtle dirt grain ──
+  ctx.save(); ctx.globalAlpha=0.04;
+  for(let i=0;i<n;i++){
+    const y=ty+i*lh;
+    for(let gx=tx;gx<tx+tw;gx+=18){
+      ctx.fillStyle=(gx+i)%2===0?'#fff':'#000';
+      ctx.fillRect(gx,y+lh*.15,8,lh*.7);
+    }
+  }
+  ctx.restore();
+
+  // ── Lane lines ──
   for(let i=0;i<=n;i++){
     const y=ty+i*lh, isEdge=i===0||i===n;
-    ctx.strokeStyle=isEdge?'#6b4a20':'#3a280e';
-    ctx.lineWidth=isEdge?2:1; ctx.setLineDash(isEdge?[]:[10,6]);
+    ctx.strokeStyle=isEdge?'#7a5825':'#3e2910';
+    ctx.lineWidth=isEdge?2:1;
+    ctx.setLineDash(isEdge?[]:[12,8]);
     ctx.beginPath(); ctx.moveTo(tx,y); ctx.lineTo(tx+tw,y); ctx.stroke();
     ctx.setLineDash([]);
   }
+
+  // ── Lane number gutter ──
   for(let i=0;i<n;i++){
     const c=HC[i], y=ty+i*lh;
-    ctx.fillStyle=c.h+'28'; ctx.fillRect(tx,y+1,30,lh-2);
-    ctx.fillStyle=c.h; ctx.font='bold 12px Bebas Neue'; ctx.textAlign='center';
-    ctx.fillText(`#${i+1}`,tx+15,y+lh/2+5);
+    ctx.fillStyle=c.h+'1e'; ctx.fillRect(tx,y+1,32,lh-2);
+    ctx.fillStyle=c.h; ctx.font=`bold ${Math.round(Math.min(lh*.42,14))}px Bebas Neue`;
+    ctx.textAlign='center';
+    ctx.fillText(`#${i+1}`,tx+16,y+lh/2+5);
   }
-  checkered(sx,ty,th,7); checkered(ex,ty,th,7);
-  ctx.font='bold 10px DM Sans'; ctx.textAlign='center'; ctx.fillStyle='rgba(255,255,255,.85)';
-  ctx.fillText('START',sx,ty-6); ctx.fillText('FINISH',ex+1,ty-6);
+
+  // ── START flag ──
+  checkered(sx,ty,th,8);
+  ctx.font='bold 10px DM Sans'; ctx.textAlign='center';
+  ctx.fillStyle='rgba(255,255,255,.7)'; ctx.fillText('START',sx,ty-8);
+
+  // ── FINISH — glowing line ──
+  ctx.save();
+  ctx.shadowColor='rgba(245,200,66,.7)'; ctx.shadowBlur=12;
+  ctx.strokeStyle='rgba(245,200,66,.9)'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(ex,ty-4); ctx.lineTo(ex,ty+th+4); ctx.stroke();
+  ctx.restore();
+  checkered(ex,ty,th,8);
+  ctx.font='bold 10px DM Sans'; ctx.textAlign='center';
+  ctx.fillStyle='rgba(245,200,66,.9)'; ctx.fillText('FINISH',ex+1,ty-8);
+
   return m;
 }
 function checkered(x,y,h,sz){
@@ -1554,10 +1757,10 @@ function updateLB(){
   const sorted=[...RS.horses].sort((a,b)=>b.pos-a.pos);
   setHTML('lb-list',sorted.map((h,r)=>`
     <div class="lb-row">
-      <span style="font-family:'Bebas Neue';font-size:10px;color:var(--muted);width:12px;">${r+1}</span>
+      <span class="lb-pos">${r+1}</span>
       <div class="lb-dot" style="background:${h.color.h}"></div>
-      <span style="font-size:9px;color:${h.color.h}">#${h.idx+1}</span>
-      <span style="font-size:8px;color:var(--muted);margin-left:auto;">${Math.round(h.pos*100)}%</span>
+      <span class="lb-name" style="color:${h.color.h}">#${h.idx+1}</span>
+      <span class="lb-pct">${Math.round(h.pos*100)}%</span>
     </div>`).join(''));
 }
 
