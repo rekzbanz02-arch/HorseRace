@@ -106,18 +106,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 }
 @media(max-width:680px){#zoom-label{display:block;}}
 
-/* ── LANDSCAPE NUDGE ── */
-#landscape-hint{
-  display:none;position:absolute;inset:0;
-  background:rgba(4,6,4,.92);backdrop-filter:blur(4px);
-  flex-direction:column;align-items:center;justify-content:center;
-  gap:12px;z-index:50;pointer-events:none;
-}
-#landscape-hint .lh-icon{font-size:46px;animation:pulse 1.5s infinite;}
-#landscape-hint p{font-size:13px;color:var(--muted);text-align:center;padding:0 28px;line-height:1.6;}
-@media(orientation:portrait) and (max-width:680px){
-  body.racing-active #landscape-hint{display:flex;}
-}
+
 
 /* ── RACE TIMER BAR ── */
 #timebar-wrap{position:absolute;top:0;left:0;right:0;height:4px;z-index:8;pointer-events:none;background:rgba(255,255,255,.04);}
@@ -138,10 +127,11 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 @keyframes bannerDrop{0%{transform:translateY(-30px) scale(.94);opacity:0}60%{transform:translateY(4px) scale(1.01)}100%{transform:translateY(0) scale(1);opacity:1}}
 @keyframes goldPulse{0%,100%{text-shadow:0 0 20px rgba(245,200,66,.5)}50%{text-shadow:0 0 55px rgba(245,200,66,.9),0 0 80px rgba(245,200,66,.4)}}
 #winner-banner{
-  position:absolute;inset:0;display:flex;flex-direction:column;
+  position:fixed;inset:0;display:flex;flex-direction:column;
   align-items:center;justify-content:center;
   background:linear-gradient(180deg,rgba(0,0,0,.88) 0%,rgba(6,10,6,.94) 100%);
-  backdrop-filter:blur(6px);z-index:11;
+  backdrop-filter:blur(6px);z-index:500;
+  touch-action:auto;
 }
 #winner-banner::before{
   content:'';position:absolute;inset:0;pointer-events:none;
@@ -573,21 +563,8 @@ body.fulltrack #fulltrack-btn{border-color:rgba(245,200,66,.4);color:var(--accen
         <div id="timebar-wrap"><div id="timebar"></div></div>
         <div id="race-lb"><h4>POSITIONS</h4><div id="lb-list"></div></div>
         <div id="countdown-overlay" style="display:none;"><div id="countdown-num"></div></div>
-        <div id="winner-banner" style="display:none;">
-          <div class="wb-trophy">🏆</div>
-          <h2 id="wb-h">WINS!</h2>
-          <div class="wb-rule"></div>
-          <div class="wb-sub" id="wb-p"></div>
-          <div class="wb-pay" id="wb-pay"></div>
-          <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center;padding:0 12px;">
-            <button class="btn bs" onclick="hideWinnerAndShowResults()">✕ Close</button>
-          </div>
-        </div>
-        <!-- Landscape nudge -->
-        <div id="landscape-hint">
-          <div class="lh-icon">📱↔️</div>
-          <p>Rotate to landscape for the best race view</p>
-        </div>
+
+
         <!-- HUD: zoom + fullscreen cluster -->
         <div id="track-hud">
           <div id="hud-zoom-group" style="display:contents;">
@@ -709,7 +686,7 @@ body.fulltrack #fulltrack-btn{border-color:rgba(245,200,66,.4);color:var(--accen
       <!-- GCash Numbers -->
       <div class="sh-section">
         <div class="sh-section-title">💳 GCash Numbers</div>
-        <p style="font-size:11px;color:var(--muted);margin-bottom:10px;">Manage GCash numbers displayed to players for sending bets. The default number will be pre-filled when creating a room.</p>
+        <p style="font-size:11px;color:var(--muted);margin-bottom:10px;">Saved to cloud — <b style="color:var(--green);">all players can see and use these numbers</b> to send their GCash bets. The default number auto-fills when creating a room.</p>
         <div class="gcash-list" id="settings-gcash-list">
           <div class="empty">No GCash numbers saved yet.</div>
         </div>
@@ -743,7 +720,7 @@ body.fulltrack #fulltrack-btn{border-color:rgba(245,200,66,.4);color:var(--accen
         <div class="sh-section-title">ℹ️ About</div>
         <div style="font-size:11px;color:var(--muted);line-height:1.7;">
           <b style="color:var(--text);">GrandStake v7</b> — Live Multiplayer Horse Racing<br>
-          Powered by JSONBin · Bet via GCash · Real-time sync<br>
+          Powered by Google Sheets · Bet via GCash · Real-time sync<br>
           <span style="color:var(--accent);">10% house edge</span> · Winner receives 90% of pot
         </div>
       </div>
@@ -875,30 +852,63 @@ body.fulltrack #fulltrack-btn{border-color:rgba(245,200,66,.4);color:var(--accen
 
 <button id="mob-fab" onclick="toggleDrawer()">☰</button>
 
+<!-- Winner banner moved to body level so touch-action:none on #track-viewport doesn't block the close button -->
+<div id="winner-banner" style="display:none;">
+  <div class="wb-trophy">🏆</div>
+  <h2 id="wb-h">WINS!</h2>
+  <div class="wb-rule"></div>
+  <div class="wb-sub" id="wb-p"></div>
+  <div class="wb-pay" id="wb-pay"></div>
+  <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center;padding:0 12px;">
+    <button class="btn bs" onclick="hideWinnerAndShowResults()" style="min-height:48px;min-width:140px;font-size:15px;touch-action:auto;">✕ Close & See Results</button>
+  </div>
+</div>
+
 
 <script>
 'use strict';
 
 // ═══════════════════════════════════════════════════════
-// GCASH NUMBER MANAGEMENT (localStorage)
+// GCASH NUMBER MANAGEMENT — stored in Google Sheets as reg.gcashNumbers
+// All users/players see the same list from the cloud.
+// In-memory cache so UI is instant; writes push to cloud.
 // ═══════════════════════════════════════════════════════
-const GCASH_STORE_KEY = 'gs_gcash_numbers';
+let _gcashCache = null; // [{number, name, isDefault}]
 
-function gcashLoad(){
-  try{ return JSON.parse(localStorage.getItem(GCASH_STORE_KEY)||'[]'); }
-  catch(e){ return []; }
+function gcashFromReg(reg){
+  return Array.isArray(reg?.gcashNumbers) ? reg.gcashNumbers : [];
 }
-function gcashSave(list){
-  try{ localStorage.setItem(GCASH_STORE_KEY, JSON.stringify(list)); }
-  catch(e){}
-}
+
+// Always read from cache — fast, no network
 function gcashGetDefault(){
-  const list = gcashLoad();
+  const list = _gcashCache || [];
   return list.find(g=>g.isDefault) || list[0] || null;
 }
 
+// Fetch latest GCash list from cloud into cache, then refresh all displays
+async function gcashRefresh(){
+  const reg = await regGet(); if(!reg) return;
+  _gcashCache = gcashFromReg(reg);
+  renderGcashList();
+  renderLobbyGcashNums();
+}
+
+// Write updated list to cloud registry (read-modify-write)
+async function gcashCloudSave(newList){
+  const reg = await regGet();
+  if(!reg){ toast('❌ Cloud unreachable'); return false; }
+  reg.gcashNumbers = newList;
+  _gcashCache = newList;
+  const ok = await regPut(reg);
+  if(ok){
+    renderGcashList();
+    renderLobbyGcashNums();
+  }
+  return ok;
+}
+
 function renderGcashList(){
-  const list = gcashLoad();
+  const list = _gcashCache || [];
   const container = document.getElementById('settings-gcash-list');
   if(!container) return;
   if(!list.length){
@@ -911,7 +921,7 @@ function renderGcashList(){
         <div class="gcash-item-num">${escHtml(g.number)}</div>
         <div class="gcash-item-name">${escHtml(g.name)}</div>
       </div>
-      ${g.isDefault?'<span class="gcash-item-default">DEFAULT</span>':''}
+      ${g.isDefault?'<span class="gcash-item-default">★ DEFAULT</span>':''}
       <div class="gcash-item-actions">
         ${!g.isDefault?`<button class="gci-btn setdef" title="Set as default" onclick="gcashSetDefault(${i})">★</button>`:''}
         <button class="gci-btn edit" title="Edit" onclick="gcashStartEdit(${i})">✏</button>
@@ -932,7 +942,7 @@ function cancelGcashEdit(){
   document.getElementById('gcash-edit-id').value = '';
 }
 function gcashStartEdit(idx){
-  const list = gcashLoad();
+  const list = _gcashCache || [];
   const g = list[idx]; if(!g) return;
   document.getElementById('gcash-edit-id').value = String(idx);
   document.getElementById('gcash-form-num').value = g.number;
@@ -940,40 +950,41 @@ function gcashStartEdit(idx){
   document.getElementById('gcash-form-title').textContent = '✏️ Edit GCash Number';
   document.getElementById('gcash-add-form').style.display = 'block';
 }
-function saveGcashEntry(){
+async function saveGcashEntry(){
   const num = document.getElementById('gcash-form-num').value.trim();
   const name = document.getElementById('gcash-form-name').value.trim();
   if(!num){ toast('Enter a GCash number!'); return; }
   if(!name){ toast('Enter account name!'); return; }
-  const list = gcashLoad();
+  const list = [...(_gcashCache||[])];
   const editId = document.getElementById('gcash-edit-id').value;
   if(editId !== ''){
     const idx = parseInt(editId);
-    if(list[idx]){ list[idx].number = num; list[idx].name = name; }
+    if(list[idx]){ list[idx] = {...list[idx], number:num, name}; }
   } else {
-    list.push({ number: num, name: name, isDefault: list.length === 0 });
+    list.push({ number:num, name, isDefault: list.length===0 });
   }
-  gcashSave(list);
-  renderGcashList();
-  cancelGcashEdit();
-  toast('✅ GCash number saved!');
+  const btn = document.querySelector('#gcash-add-form .btn.bp');
+  if(btn){ btn.textContent='💾 Saving…'; btn.disabled=true; }
+  const ok = await gcashCloudSave(list);
+  if(btn){ btn.textContent='💾 Save'; btn.disabled=false; }
+  if(ok){ cancelGcashEdit(); toast('✅ Saved to cloud — all players can see this!'); }
+  else { toast('❌ Save failed — check connection'); }
 }
-function gcashDelete(idx){
-  const list = gcashLoad();
+async function gcashDelete(idx){
+  const list = [...(_gcashCache||[])];
   if(!list[idx]) return;
   if(!confirm(`Delete ${list[idx].number} (${list[idx].name})?`)) return;
   const wasDefault = list[idx].isDefault;
   list.splice(idx,1);
   if(wasDefault && list.length) list[0].isDefault = true;
-  gcashSave(list);
-  renderGcashList();
+  const ok = await gcashCloudSave(list);
+  if(!ok) toast('❌ Delete failed — check connection');
 }
-function gcashSetDefault(idx){
-  const list = gcashLoad();
-  list.forEach((g,i) => g.isDefault = i===idx);
-  gcashSave(list);
-  renderGcashList();
-  toast('✅ Default GCash number updated');
+async function gcashSetDefault(idx){
+  const list = (_gcashCache||[]).map((g,i)=>({...g, isDefault:i===idx}));
+  const ok = await gcashCloudSave(list);
+  if(ok) toast('✅ Default updated');
+  else toast('❌ Update failed');
 }
 
 // ═══════════════════════════════════════════════════════
@@ -982,7 +993,9 @@ function gcashSetDefault(idx){
 function openSettings(){
   document.getElementById('screen-settings').style.display='flex';
   document.getElementById('gcash-add-form').style.display='none';
+  // Show cached list immediately, then refresh from cloud
   renderGcashList();
+  gcashRefresh();
 }
 function closeSettings(){ document.getElementById('screen-settings').style.display='none'; }
 
@@ -1144,14 +1157,9 @@ function escHtml(s){
 
 
 // ═══════════════════════════════════════════════════════
-// CONFIG
-// ⚠️ F-11 CRITICAL: API_KEY is exposed in client-side code.
-// Before real-money public launch, move this to a server-side
-// proxy (Cloudflare Worker / Vercel Edge Function). Replace with
-// a Collection Key scoped to this bin as a minimum interim measure.
+// CONFIG — Google Sheets backend via Apps Script
 // ═══════════════════════════════════════════════════════
-const API_KEY  = '$2a$10$CvK4w8DTXZ1//5H1cpGQIerIT8Kzvk0FQHosdNm.XS0Q9n6sMmaf6';
-const BIN_ID   = '69a983c4ae596e708f62112e';
+const GS_URL   = 'https://script.google.com/macros/s/AKfycbxaTKOfCYXsvDAMrOd9dJjClv_7zF8auou8Z_0l6KcO706ODwhwosAtOjsirQRTofAN/exec';
 const POLL_MS  = 2500;
 let   RACE_DUR = 60;  // seconds — set by host slider, synced via room data
 let   BASE     = 1/60; // module-level so tickHorses can access it
@@ -1174,17 +1182,17 @@ let _lobbyRefreshTimer = null;
 const LOBBY_REFRESH_MS = 3000;
 
 // ═══════════════════════════════════════════════════════
-// JSONBIN  — registry stores { rooms:[…] }
+// GOOGLE SHEETS BACKEND — registry stores { rooms:[…] }
+// Apps Script web app handles GET (read) and POST (write).
 // ═══════════════════════════════════════════════════════
 async function bGet(){
   try{
     syncDot('on');
-    const r=await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`,
-      {headers:{'X-Master-Key':API_KEY,'X-Bin-Meta':false}});
+    const r=await fetch(GS_URL+'?action=get',{redirect:'follow'});
     if(!r.ok) throw r.status;
     const j=await r.json();
     syncDot('ok');
-    return j.record ?? j;
+    return j;
   }catch(e){syncDot('err');console.error('GET',e);return null;}
 }
 // F-12 FIX: Debounce writes — minimum 500ms between PUTs from this client
@@ -1196,10 +1204,11 @@ async function bPut(d){
   _lastPutTs=Date.now();
   try{
     syncDot('on');
-    const r=await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`,{
-      method:'PUT',
-      headers:{'Content-Type':'application/json','X-Master-Key':API_KEY},
-      body:JSON.stringify(d)
+    const r=await fetch(GS_URL,{
+      method:'POST',
+      redirect:'follow',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({action:'put',data:d})
     });
     if(!r.ok) throw r.status;
     syncDot('ok'); return true;
@@ -1215,11 +1224,14 @@ function syncDot(s){
 
 // Wrap raw bin to registry format if needed (migration from old single-room format)
 function toRegistry(raw){
-  if(!raw) return {rooms:[]};
-  if(Array.isArray(raw.rooms)) return raw;
+  if(!raw) return {rooms:[], gcashNumbers:[]};
+  if(Array.isArray(raw.rooms)){
+    if(!Array.isArray(raw.gcashNumbers)) raw.gcashNumbers=[];
+    return raw;
+  }
   // old format: raw was a single room object
-  if(raw.id && raw.phase) return {rooms:[raw]};
-  return {rooms:[]};
+  if(raw.id && raw.phase) return {rooms:[raw], gcashNumbers:[]};
+  return {rooms:[], gcashNumbers:[]};
 }
 
 // Read registry
@@ -1227,9 +1239,10 @@ async function regGet(){ const d=await bGet(); return toRegistry(d); }
 
 // Write whole registry with F-18 version counter for concurrency control
 async function regPut(reg){
-  // Prune rooms finished > 2 hours ago
+  // Prune rooms finished > 2 hours ago — never touch gcashNumbers
   const now=Date.now();
   reg.rooms=reg.rooms.filter(r=>r.phase!=='results'||(now-(r.finishedAt||0))<7200000);
+  if(!Array.isArray(reg.gcashNumbers)) reg.gcashNumbers=[];
   reg._version=(reg._version||0)+1;
   return bPut(reg);
 }
@@ -1265,6 +1278,12 @@ async function refreshRooms(silent=false){
   if(!reg){
     if(!silent) el.innerHTML='<div class="room-empty">Could not load — check connection</div>';
     return;
+  }
+  // Cache GCash numbers for all users on every room refresh
+  const freshGcash = gcashFromReg(reg);
+  if(JSON.stringify(freshGcash) !== JSON.stringify(_gcashCache)){
+    _gcashCache = freshGcash;
+    renderLobbyGcashNums();
   }
   const rooms=(reg.rooms||[]).filter(r=>r&&r.id&&r.phase&&r.phase!=='results');
   if(!rooms.length){el.innerHTML='<div class="room-empty">No rooms yet. Be the first to create one!</div>';return;}
@@ -1394,6 +1413,11 @@ function enterApp(){
 // ═══════════════════════════════════════════════════════
 async function pollOnce(){
   const reg=await regGet(); if(!reg) return;
+  // Keep GCash cache fresh for all players during game
+  const freshGcash = gcashFromReg(reg);
+  if(JSON.stringify(freshGcash) !== JSON.stringify(_gcashCache)){
+    _gcashCache = freshGcash;
+  }
   const room=myRoom(reg); if(!room) return;
   const prev=S.room?.phase;
   S.room=room; renderAll();
@@ -1428,7 +1452,7 @@ function onPhase(from,to){
   if(to==='countdown') runCountdown();
   if(to==='racing'){
     hideCountdown();
-    if(!RS.running) beginRace();
+    if(!RS.running&&!RS.finished) beginRace();
     // Auto full-track when race starts so track is fully visible
     if(!fullTrack) toggleFullTrack();
     document.body.classList.add('racing-active');
@@ -1436,10 +1460,16 @@ function onPhase(from,to){
   }
   if(to==='results'){
     stopClock();
-    showResults();
+    RS.running=false; RS.finished=true; // prevent any beginRace re-entry
     document.body.classList.remove('racing-active');
-    // Restore panels so results are visible
+    document.getElementById('race-lb').style.display='none';
+    showResults();
+    // Restore desktop panels
     if(fullTrack) toggleFullTrack();
+    // Mobile: open drawer to Info tab so results are visible
+    if(window.innerWidth<=680){
+      setTimeout(()=>{mTab('info');if(!drawerOpen)toggleDrawer();},700);
+    }
     // F-20 FIX: Stop polling 30s after results to save API quota
     setTimeout(()=>{if(S.pollTimer){clearInterval(S.pollTimer);S.pollTimer=null;}},30000);
     showWinnerBanner(S.room);
@@ -1496,7 +1526,8 @@ function renderAll(){
   }
   if(room.phase==='results') renderResults(room);
   if(!RS.running&&room.phase==='lobby') drawIdle();
-  if(room.phase==='racing'&&!RS.running) beginRace();
+  // RS.finished guards against re-launching the race loop after onFinish() sets it false
+  if(room.phase==='racing'&&!RS.running&&!RS.finished) beginRace();
   // Show/hide live rankings panel
   const lrp = document.getElementById('live-rank-panel');
   if(lrp) lrp.style.display = (room.phase==='racing') ? 'block' : 'none';
@@ -1657,14 +1688,17 @@ function openGcash(){
   setEl('gc-payout-info','Winner receives 90% of the pot. 10% is retained by the host as a service fee. Current pot after your bet: ₱'+potAfter.toLocaleString()+' → winner gets ₱'+Math.round(potAfter*.9).toLocaleString());
   document.getElementById('gc-ref').value='';
   document.getElementById('gc-sender').value='';
-  // Show saved GCash numbers if available (for reference)
-  const gcList = gcashLoad();
+  // Show cloud GCash numbers as tappable quick-select options
+  const gcList = _gcashCache || [];
   const savedDiv = document.getElementById('gc-saved-nums');
-  if(savedDiv && gcList.length > 1){
-    savedDiv.innerHTML = `<div style="font-size:10px;color:var(--muted);text-align:center;margin-bottom:4px;">Saved Numbers:</div>`+
-      gcList.map(g=>`<div onclick="selectGcashNum('${escHtml(g.number)}','${escHtml(g.name)}')" style="cursor:pointer;padding:5px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;font-size:11px;transition:.1s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-        <span style="font-family:'DM Mono';color:var(--blue);">${escHtml(g.number)}</span>
-        <span style="color:var(--muted);">${escHtml(g.name)}</span>
+  if(savedDiv && gcList.length){
+    savedDiv.innerHTML = `<div style="font-size:10px;color:var(--muted);text-align:center;margin-bottom:5px;">💳 Tap a number to select it:</div>`+
+      gcList.map(g=>`<div onclick="selectGcashNum('${escHtml(g.number)}','${escHtml(g.name)}')"
+        style="cursor:pointer;padding:7px 10px;background:var(--surface2);border:1px solid ${g.isDefault?'rgba(245,200,66,.5)':'var(--border)'};border-radius:6px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;font-size:12px;-webkit-tap-highlight-color:transparent;"
+        onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='${g.isDefault?'rgba(245,200,66,.5)':'var(--border)'}'"
+      >
+        <span style="font-family:'DM Mono';color:var(--blue);font-weight:600;">${escHtml(g.number)}</span>
+        <span style="color:var(--muted);font-size:10px;">${escHtml(g.name)}${g.isDefault?' ⭐':''}</span>
       </div>`).join('');
   } else if(savedDiv){ savedDiv.innerHTML=''; }
   document.getElementById('screen-gcash').style.display='flex';
@@ -2419,13 +2453,27 @@ function darken(hex,amt){
 // ═══════════════════════════════════════════════════════
 async function onFinish(){
   stopClock();
+  // Clean up racing state immediately for all clients
+  document.body.classList.remove('racing-active');
+  document.getElementById('race-lb').style.display='none';
+
   const room=S.room;
   const result=RS.finishOrder.map(idx=>({
     playerId:room.players.find(p=>p.horse===idx)?.id||null, horseIdx:idx
   }));
-  // Update local room with result immediately so showWinnerBanner can read it
+  // Update local room with result immediately so banner + results can read it
   room.raceResult=result;
+
+  // Show winner banner for ALL clients right away
   showWinnerBanner(room);
+
+  // Non-hosts: show results panel immediately (don't wait for next cloud poll)
+  if(!S.isHost){
+    renderResults(room);
+    if(window.innerWidth<=680){
+      setTimeout(()=>{mTab('info');if(!drawerOpen)toggleDrawer();},700);
+    }
+  }
 
   if(S.isHost){
     const reg=await regGet(); if(!reg) return;
@@ -2545,21 +2593,22 @@ document.addEventListener('DOMContentLoaded',()=>{
       }
     });
   }
-  // Render saved GCash numbers in lobby for quick reference
-  renderLobbyGcashNums();
+  // GCash numbers are loaded via refreshRooms() in window.load
+  // (gcashRefresh here would fail — GS_URL fetch not yet safe at this early init stage)
 });
 
 function renderLobbyGcashNums(){
   const div = document.getElementById('lobby-gcash-nums');
   if(!div) return;
-  const list = gcashLoad();
+  const list = _gcashCache || [];
   if(!list.length){ div.innerHTML=''; return; }
-  div.innerHTML = `<div style="border-top:1px solid var(--border);margin-top:4px;padding-top:8px;">
-    <div style="font-size:10px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.6px;">💳 GCash Payment Numbers</div>
-    ${list.map(g=>`<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:11px;border-bottom:1px solid rgba(255,255,255,.04);">
-      <span style="font-family:'DM Mono';color:var(--blue);">${escHtml(g.number)}</span>
-      <span style="color:var(--muted);">${escHtml(g.name)}${g.isDefault?' <span style="color:var(--accent);">(default)</span>':''}</span>
+  div.innerHTML = `<div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px;">
+    <div style="font-size:10px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.6px;">💳 GCash Payment Numbers</div>
+    ${list.map(g=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:var(--surface2);border:1px solid ${g.isDefault?'rgba(245,200,66,.35)':'var(--border)'};border-radius:6px;margin-bottom:5px;font-size:12px;">
+      <span style="font-family:'DM Mono';color:var(--blue);font-weight:600;">${escHtml(g.number)}</span>
+      <span style="color:var(--muted);font-size:10px;">${escHtml(g.name)}${g.isDefault?' <span style="color:var(--accent);">★ default</span>':''}</span>
     </div>`).join('')}
+    <p style="font-size:10px;color:var(--muted);margin-top:4px;text-align:center;">Send your bet to one of these numbers via GCash</p>
   </div>`;
 }
 
