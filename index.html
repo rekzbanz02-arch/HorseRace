@@ -2969,7 +2969,7 @@ function renderLobbyGcashNums(){
     <div style="font-size:10px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.6px;">💳 GCash Payment Numbers</div>
     ${list.map(g=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:var(--surface2);border:1px solid ${g.isDefault?'rgba(245,200,66,.35)':'var(--border)'};border-radius:6px;margin-bottom:5px;font-size:12px;">
       <span style="font-family:'DM Mono';color:var(--blue);font-weight:600;">${escHtml(g.number)}</span>
-      <span style="color:var(--muted);font-size:10px;">${escHtml(g.name)}${g.isDefault?' <span style="color:var(--accent);">★ default</span>':''}</span>
+      <span style="color:var(--muted);font-size:10px;">${escHtml(g.name)}${g.isDefault?' <span style="color:var(--accent);"></span>':''}</span>
     </div>`).join('')}
     <p style="font-size:10px;color:var(--muted);margin-top:4px;text-align:center;">Send your bet via GCash to the numbers listed above,<br>
 
