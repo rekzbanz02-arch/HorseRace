@@ -461,10 +461,6 @@ body.fulltrack #fulltrack-btn{border-color:rgba(245,200,66,.4);color:var(--accen
     <div id="horse-count-grid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:6px;"></div>
     <button class="btn bg bfull" style="margin-top:10px;" onclick="createGame()">🎯 Create New Room</button>
 
-    <p style="font-size:11px;color:var(--muted);margin-top:10px;text-align:center;">
-      Send your Gcash payment screenshots <a href="https://m.me/j/AbaKxgEniPoIHgF1/" target="_blank" style="color:var(--accent,#4fc3f7);font-weight:600;text-decoration:underline;">here</a>.
-    </p>
-
     <!-- Lobby action buttons: Settings & Help -->
     <div class="lobby-actions">
       <button class="btn bs" onclick="openSettings()">⚙️ Settings</button>
@@ -2975,9 +2971,9 @@ function renderLobbyGcashNums(){
       <span style="font-family:'DM Mono';color:var(--blue);font-weight:600;">${escHtml(g.number)}</span>
       <span style="color:var(--muted);font-size:10px;">${escHtml(g.name)}${g.isDefault?' <span style="color:var(--accent);">★ default</span>':''}</span>
     </div>`).join('')}
-    <p style="font-size:10px;color:var(--muted);margin-top:4px;text-align:center;">Send your bet to one of these numbers via GCash</p>
-	    <p style="font-size:11px;color:var(--muted);margin-top:10px;text-align:center;">
-      Send your Gcash payment screenshots <a href="https://m.me/j/AbaKxgEniPoIHgF1/" target="_blank" style="color:var(--accent,#4fc3f7);font-weight:600;text-decoration:underline;">here</a>.
+    <p style="font-size:10px;color:var(--muted);margin-top:4px;text-align:center;">Send your bet via GCash to the numbers listed above,<br>
+
+      then send your payment screenshot <a href="https://m.me/j/AbaKxgEniPoIHgF1/" target="_blank" style="color:var(--accent,#4fc3f7);font-weight:600;text-decoration:underline;">here</a> to confirm your bet.
     </p>
   </div>`;
 }
